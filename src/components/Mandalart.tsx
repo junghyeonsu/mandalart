@@ -1,186 +1,29 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react";
+import { RotateCcwIcon } from "lucide-react";
+
+import type { ICell, IData } from "@/contexts/MandalartContext";
+import { MANDAL_ART_KEY, Position, useMandalart } from "@/contexts/MandalartContext";
 
 import { Textarea } from "./ui/textarea";
 
-enum Position {
-  topLeft,
-  topCenter,
-  topRight,
-  centerLeft,
-  centerCenter,
-  centerRight,
-  bottomLeft,
-  bottomCenter,
-  bottomRight,
-}
-
-const KEY = "mandalart";
-
-interface Data {
-  title: string;
-  // type?: "text" | "image";
-}
-
-interface Cell {
-  position: Position;
-  data: Data[];
-}
-
 function Mandalart() {
-  const [cells, setCells] = useState<Cell[]>([
-    {
-      position: Position.topLeft,
-      data: [
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-      ],
-    },
-    {
-      position: Position.topCenter,
-      data: [
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-      ],
-    },
-    {
-      position: Position.topRight,
-      data: [
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-      ],
-    },
-    {
-      position: Position.centerLeft,
-      data: [
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-      ],
-    },
-    {
-      position: Position.centerCenter,
-      data: [
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-      ],
-    },
-    {
-      position: Position.centerRight,
-      data: [
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-      ],
-    },
-    {
-      position: Position.bottomLeft,
-      data: [
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-      ],
-    },
-    {
-      position: Position.bottomCenter,
-      data: [
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-      ],
-    },
-    {
-      position: Position.bottomRight,
-      data: [
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-        { title: "" },
-      ],
-    },
-  ]);
-
-  useEffect(() => {
-    const data = localStorage.getItem(KEY);
-
-    if (data) {
-      setCells(JSON.parse(data));
-    }
-  }, []);
+  const { cells, setCells, resetCells } = useMandalart();
 
   return (
-    <div className="grid grid-cols-3 gap-4">
-      {cells.map((cell, index) => {
-        return (
-          <div key={cell.position}>
-            <Cell datas={cell.data} setCells={setCells} cellIndex={index} />
-          </div>
-        );
-      })}
-    </div>
+    <>
+      <RotateCcwIcon onClick={resetCells} className="fixed top-4 right-4 w-6 h-6 text-primary cursor-pointer" />
+      <div className="grid grid-cols-3 gap-4">
+        {cells.map((cell, index) => {
+          return <Cell key={cell.position} datas={cell.data} setCells={setCells} cellIndex={index} />;
+        })}
+      </div>
+    </>
   );
 }
 
 interface CellProps {
-  datas: Data[];
-  setCells: React.Dispatch<React.SetStateAction<Cell[]>>;
+  datas: IData[];
+  setCells: React.Dispatch<React.SetStateAction<ICell[]>>;
   cellIndex: number;
 }
 
@@ -201,7 +44,7 @@ function Cell({ datas, setCells, cellIndex }: CellProps) {
               newData[dataIndex].data[cellIndex].title = e.target.value;
             }
 
-            localStorage.setItem(KEY, JSON.stringify(newData));
+            localStorage.setItem(MANDAL_ART_KEY, JSON.stringify(newData));
             return newData;
           });
         };
