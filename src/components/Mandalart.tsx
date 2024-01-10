@@ -1,54 +1,176 @@
 /* eslint-disable no-unused-vars */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Textarea } from "./ui/textarea";
 
+enum Position {
+  topLeft,
+  topCenter,
+  topRight,
+  centerLeft,
+  centerCenter,
+  centerRight,
+  bottomLeft,
+  bottomCenter,
+  bottomRight,
+}
+
+const KEY = "mandalart";
+
+interface Data {
+  title: string;
+  // type?: "text" | "image";
+}
+
+interface Cell {
+  position: Position;
+  data: Data[];
+}
+
 function Mandalart() {
-  const [data, setData] = useState([
+  const [cells, setCells] = useState<Cell[]>([
     {
-      position: "top-left",
-      data: ["", "", "", "", "", "", "", "", ""],
+      position: Position.topLeft,
+      data: [
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+      ],
     },
     {
-      position: "top-center",
-      data: ["", "", "", "", "", "", "", "", ""],
+      position: Position.topCenter,
+      data: [
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+      ],
     },
     {
-      position: "top-right",
-      data: ["", "", "", "", "", "", "", "", ""],
+      position: Position.topRight,
+      data: [
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+      ],
     },
     {
-      position: "center-left",
-      data: ["", "", "", "", "", "", "", "", ""],
+      position: Position.centerLeft,
+      data: [
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+      ],
     },
     {
-      position: "center-center",
-      data: ["", "", "", "", "", "", "", "", ""],
+      position: Position.centerCenter,
+      data: [
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+      ],
     },
     {
-      position: "center-right",
-      data: ["", "", "", "", "", "", "", "", ""],
+      position: Position.centerRight,
+      data: [
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+      ],
     },
     {
-      position: "bottom-left",
-      data: ["", "", "", "", "", "", "", "", ""],
+      position: Position.bottomLeft,
+      data: [
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+      ],
     },
     {
-      position: "bottom-center",
-      data: ["", "", "", "", "", "", "", "", ""],
+      position: Position.bottomCenter,
+      data: [
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+      ],
     },
     {
-      position: "bottom-right",
-      data: ["", "", "", "", "", "", "", "", ""],
+      position: Position.bottomRight,
+      data: [
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+        { title: "" },
+      ],
     },
   ]);
 
+  useEffect(() => {
+    const data = localStorage.getItem(KEY);
+
+    if (data) {
+      setCells(JSON.parse(data));
+    }
+  }, []);
+
   return (
     <div className="grid grid-cols-3 gap-4">
-      {data.map((cell, index) => {
+      {cells.map((cell, index) => {
         return (
           <div key={cell.position}>
-            <Cell data={cell.data} setData={setData} cellIndex={index} />
+            <Cell datas={cell.data} setCells={setCells} cellIndex={index} />
           </div>
         );
       })}
@@ -57,35 +179,29 @@ function Mandalart() {
 }
 
 interface CellProps {
-  data: string[];
-  setData: React.Dispatch<
-    React.SetStateAction<
-      {
-        position: string;
-        data: string[];
-      }[]
-    >
-  >;
+  datas: Data[];
+  setCells: React.Dispatch<React.SetStateAction<Cell[]>>;
   cellIndex: number;
 }
 
-function Cell({ data, setData, cellIndex }: CellProps) {
+function Cell({ datas, setCells, cellIndex }: CellProps) {
   return (
     <div className="grid grid-cols-3 gap-2">
-      {data.map((text, dataIndex) => {
-        const isCenter = dataIndex === 4;
-        const isCenterCell = cellIndex === 4;
-        const isReadOnly = isCenter && !isCenterCell;
+      {datas.map((data, dataIndex) => {
+        const isCenterData = dataIndex === Position.centerCenter;
+        const isCenterCell = cellIndex === Position.centerCenter;
+        const isReadOnly = isCenterData && !isCenterCell;
 
         const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-          setData((prev) => {
+          setCells((prev) => {
             const newData = [...prev];
-            newData[cellIndex].data[dataIndex] = e.target.value;
+            newData[cellIndex].data[dataIndex].title = e.target.value;
 
             if (isCenterCell) {
-              newData[dataIndex].data[cellIndex] = e.target.value;
+              newData[dataIndex].data[cellIndex].title = e.target.value;
             }
 
+            localStorage.setItem(KEY, JSON.stringify(newData));
             return newData;
           });
         };
@@ -94,7 +210,7 @@ function Cell({ data, setData, cellIndex }: CellProps) {
           <div className="w-20 h-20" key={dataIndex}>
             <Textarea
               className="w-full h-full resize-none text-xs"
-              value={text}
+              value={data.title}
               onChange={handleChange}
               readOnly={isReadOnly}
             />
