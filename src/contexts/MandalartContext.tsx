@@ -173,10 +173,19 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  function resetCells() {
-    setCells(initialData);
+  const resetCells = () => {
     localStorage.removeItem(MANDAL_ART_KEY);
-  }
+    // TODO: use immer
+    const initialDatas = initialData.map((cell) => {
+      return {
+        ...cell,
+        data: cell.data.map((data) => {
+          return { ...data, title: "" };
+        }),
+      };
+    });
+    setCells(initialDatas);
+  };
 
   return <MandalartContext.Provider value={{ cells, setCells, resetCells }}>{children}</MandalartContext.Provider>;
 };
