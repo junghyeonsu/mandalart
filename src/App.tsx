@@ -1,9 +1,9 @@
-import { Button } from "./components/ui/button";
+import { Mandalart } from "./components/Mandalart";
 
 function App() {
   return (
     <div className="flex items-center justify-center w-full h-dvh">
-      <Button>MandalArt</Button>
+      <Mandalart />
     </div>
   );
 }
