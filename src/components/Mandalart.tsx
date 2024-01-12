@@ -84,7 +84,9 @@ function Cell({ datas, setCells, cellIndex, modal }: CellProps) {
         return (
           <div key={dataIndex} className={`lg:w-20 lg:h-20 ${modal ? "w-24 h-24" : "w-10 h-10"}`}>
             <Textarea
-              className="resize-none text-xxs lg:text-sm text-center"
+              className={`resize-none text-xxs lg:text-sm text-center ${isCenterData && " font-bold"} ${
+                isReadOnly && " bg-gray-100"
+              }`}
               value={data.title}
               onChange={handleChange}
               readOnly={isReadOnly}
