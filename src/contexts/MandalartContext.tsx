@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable no-unused-vars */
+import { produce } from "immer";
 import { createContext, useContext, useEffect, useState } from "react";
 
 export const MANDAL_ART_KEY = "mandalart";
@@ -16,24 +17,25 @@ export enum Position {
   bottomRight,
 }
 
-export interface IData {
+export interface MandalartItem {
   title: string;
 }
 
-export interface ICell {
+export interface MandalartSection {
   position: Position;
-  data: IData[];
+  data: MandalartItem[];
 }
 
-interface State {
-  cells: ICell[];
-  setCells: React.Dispatch<React.SetStateAction<ICell[]>>;
-  resetCells: () => void;
+export interface MandalartContextState {
+  mandalartData: MandalartSection[];
+
+  changeMandalartItemTitle: (sectionIndex: number, itemIndex: number, title: string) => void;
+  resetMandalartData: () => void;
 }
 
-const MandalartContext = createContext<State | undefined>(undefined);
+const MandalartContext = createContext<MandalartContextState | undefined>(undefined);
 
-const initialData = [
+const initialData: MandalartSection[] = [
   {
     position: Position.topLeft,
     data: [
@@ -163,31 +165,54 @@ const initialData = [
 ];
 
 const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cells, setCells] = useState<ICell[]>(initialData);
+  const [mandalartData, setMandalartData] = useState<MandalartSection[]>(initialData);
+
+  function loadMandalartData() {
+    const data = localStorage.getItem(MANDAL_ART_KEY);
+    if (data) setMandalartData(JSON.parse(data));
+  }
+
+  function resetMandalartData() {
+    localStorage.removeItem(MANDAL_ART_KEY);
+
+    setMandalartData((prevData) =>
+      produce(prevData, (draft) => {
+        draft.forEach((cell) => {
+          cell.data.forEach((data) => {
+            data.title = "";
+          });
+        });
+      }),
+    );
+  }
+
+  function changeMandalartItemTitle(sectionIndex: number, itemIndex: number, title: string) {
+    setMandalartData((prevData) => {
+      const newData = produce(prevData, (draft) => {
+        draft[sectionIndex].data[itemIndex].title = title;
+      });
+
+      localStorage.setItem(MANDAL_ART_KEY, JSON.stringify(newData));
+
+      return newData;
+    });
+  }
 
   useEffect(() => {
-    const data = localStorage.getItem(MANDAL_ART_KEY);
-
-    if (data) {
-      setCells(JSON.parse(data));
-    }
+    loadMandalartData();
   }, []);
 
-  const resetCells = () => {
-    localStorage.removeItem(MANDAL_ART_KEY);
-    // TODO: use immer
-    const initialDatas = initialData.map((cell) => {
-      return {
-        ...cell,
-        data: cell.data.map((data) => {
-          return { ...data, title: "" };
-        }),
-      };
-    });
-    setCells(initialDatas);
-  };
-
-  return <MandalartContext.Provider value={{ cells, setCells, resetCells }}>{children}</MandalartContext.Provider>;
+  return (
+    <MandalartContext.Provider
+      value={{
+        mandalartData,
+        resetMandalartData,
+        changeMandalartItemTitle,
+      }}
+    >
+      {children}
+    </MandalartContext.Provider>
+  );
 };
 
 const useMandalart = () => {
