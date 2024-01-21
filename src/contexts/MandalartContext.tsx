@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable no-unused-vars */
 import { produce } from "immer";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 export const MANDAL_ART_KEY = "mandalart";
 
@@ -28,12 +28,15 @@ export interface MandalartSection {
 
 export interface MandalartContextState {
   mandalartData: MandalartSection[];
+}
 
+export interface MandalartContextDispatch {
   changeMandalartItemTitle: (sectionIndex: number, itemIndex: number, title: string) => void;
   resetMandalartData: () => void;
 }
 
-const MandalartContext = createContext<MandalartContextState | undefined>(undefined);
+const MandalartStateContext = createContext<MandalartContextState | undefined>(undefined);
+const MandalartDispatchContext = createContext<MandalartContextDispatch | undefined>(undefined);
 
 const initialData: MandalartSection[] = [
   {
@@ -167,12 +170,12 @@ const initialData: MandalartSection[] = [
 const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
   const [mandalartData, setMandalartData] = useState<MandalartSection[]>(initialData);
 
-  function loadMandalartData() {
+  const loadMandalartData = useCallback(() => {
     const data = localStorage.getItem(MANDAL_ART_KEY);
     if (data) setMandalartData(JSON.parse(data));
-  }
+  }, []);
 
-  function resetMandalartData() {
+  const resetMandalartData = useCallback(() => {
     localStorage.removeItem(MANDAL_ART_KEY);
 
     setMandalartData((prevData) =>
@@ -184,9 +187,9 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
         });
       }),
     );
-  }
+  }, []);
 
-  function changeMandalartItemTitle(sectionIndex: number, itemIndex: number, title: string) {
+  const changeMandalartItemTitle = useCallback((sectionIndex: number, itemIndex: number, title: string) => {
     setMandalartData((prevData) => {
       const newData = produce(prevData, (draft) => {
         draft[sectionIndex].data[itemIndex].title = title;
@@ -196,35 +199,50 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
 
       return newData;
     });
-  }
+  }, []);
 
   useEffect(() => {
     loadMandalartData();
-  }, []);
+  }, [loadMandalartData]);
 
   return (
-    <MandalartContext.Provider
+    <MandalartDispatchContext.Provider
       value={{
-        mandalartData,
         resetMandalartData,
         changeMandalartItemTitle,
       }}
     >
-      {children}
-    </MandalartContext.Provider>
+      <MandalartStateContext.Provider
+        value={{
+          mandalartData,
+        }}
+      >
+        {children}
+      </MandalartStateContext.Provider>
+    </MandalartDispatchContext.Provider>
   );
 };
 
-const useMandalart = () => {
-  const context = useContext(MandalartContext);
+const useMandalartState = () => {
+  const context = useContext(MandalartStateContext);
 
   if (context === undefined) {
-    throw new Error("useMandalart must be used within a MandalartProvider");
+    throw new Error("useMandalartState must be used within a MandalartProvider");
   }
 
   return context;
 };
 
-export { MandalartContext, useMandalart };
+const useMandalartDispatch = () => {
+  const context = useContext(MandalartDispatchContext);
+
+  if (context === undefined) {
+    throw new Error("useMandalartDispatch must be used within a MandalartProvider");
+  }
+
+  return context;
+};
+
+export { useMandalartDispatch, useMandalartState };
 
 export default MandalartProvider;
