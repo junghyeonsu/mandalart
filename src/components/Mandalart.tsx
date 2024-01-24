@@ -1,7 +1,11 @@
 /* eslint-disable no-unused-vars */
+import "reactflow/dist/style.css";
+
 import { RotateCcwIcon } from "lucide-react";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { useMediaQuery } from "react-responsive";
+import type { Edge, Node, OnEdgesChange, OnNodesChange } from "reactflow";
+import ReactFlow, { applyEdgeChanges, applyNodeChanges, Background, Controls, MiniMap } from "reactflow";
 
 import type { MandalartItem, MandalartSection } from "@/contexts/MandalartContext";
 import { Position, useMandalartDispatch, useMandalartState } from "@/contexts/MandalartContext";
@@ -9,14 +13,46 @@ import { Position, useMandalartDispatch, useMandalartState } from "@/contexts/Ma
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import { Textarea } from "./ui/textarea";
 
+const centerNodes: Node[] = [
+  { id: "A", type: "group", position: { x: 100, y: 100 }, data: { label: null }, style: { width: 300, height: 500 } },
+  { id: "B", type: "input", extent: "parent", position: { x: 80, y: 100 }, data: { label: "1" }, parentNode: "A" },
+  { id: "C", type: "input", extent: "parent", position: { x: 80, y: 200 }, data: { label: "2" }, parentNode: "A" },
+  { id: "D", type: "input", extent: "parent", position: { x: 80, y: 300 }, data: { label: "3" }, parentNode: "A" },
+  { id: "E", type: "input", extent: "parent", position: { x: 80, y: 400 }, data: { label: "4" }, parentNode: "A" },
+];
+
+const initialNodes: Node[] = [...centerNodes];
+const initialEdges: Edge[] = [{ id: "eB-C", source: "B", target: "C" }];
+
 const Mandalart = () => {
+  const [nodes, setNodes] = useState<Node[]>(initialNodes);
+  const [edges, setEdges] = useState<Edge[]>(initialEdges);
+
   const isLarge = useMediaQuery({ query: "(min-width: 1024px)" });
   const { mandalartData } = useMandalartState();
+
+  const onNodesChange: OnNodesChange = useCallback(
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    [setNodes],
+  );
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    [setEdges],
+  );
 
   return (
     <>
       <ResetButton />
-      <div className="grid grid-cols-3 gap-2 lg:gap-4">
+
+      <div className="w-[100vh] h-[100vh] border-4 border-rose-500">
+        <ReactFlow fitView nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}>
+          <Controls />
+          <MiniMap />
+          <Background gap={20} size={1} />
+        </ReactFlow>
+      </div>
+
+      {/* <div className="grid grid-cols-3 gap-2 lg:gap-4">
         {mandalartData.map((section, sectionPosition) => {
           return isLarge ? (
             <Section key={sectionPosition} sectionData={section} sectionPosition={sectionPosition} modal={false} />
@@ -32,7 +68,7 @@ const Mandalart = () => {
             </Dialog>
           );
         })}
-      </div>
+      </div> */}
     </>
   );
 };
