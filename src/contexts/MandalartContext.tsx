@@ -20,7 +20,7 @@ interface MandalartContextDispatch {
 
   resetNodes: () => void;
 
-  changeTitle: (id: string, title: string) => void;
+  changeData: (id: string, prop: "title" | "description", value: string) => void;
 }
 
 const MandalartStateContext = createContext<MandalartContextState | undefined>(undefined);
@@ -31,67 +31,58 @@ const FLOW_KEY = "mandalart-flow";
 const GROUP_SIZE = 300;
 const GROUP_GAP = 20;
 const NODE_SIZE = 90;
-const NODE_GAP = 10;
+const NODE_GAP = 8;
 
-const GROUP_POSITION = [
-  "topLeft",
-  "topCenter",
-  "topRight",
-  "centerLeft",
-  "centerCenter",
-  "centerRight",
-  "bottomLeft",
-  "bottomCenter",
-  "bottomRight",
-];
-
-const NODE_POSITION = [
-  "topLeft",
-  "topCenter",
-  "topRight",
-  "centerLeft",
-  "centerCenter",
-  "centerRight",
-  "bottomLeft",
-  "bottomCenter",
-  "bottomRight",
-];
+export const Position = {
+  topLeft: "topLeft",
+  topCenter: "topCenter",
+  topRight: "topRight",
+  centerLeft: "centerLeft",
+  centerCenter: "centerCenter",
+  centerRight: "centerRight",
+  bottomLeft: "bottomLeft",
+  bottomCenter: "bottomCenter",
+  bottomRight: "bottomRight",
+};
 
 export interface NodeData {
   id: string;
   title: string;
+  description?: string;
 }
 
-const initialNodes: Node<NodeData>[] = GROUP_POSITION.map((position, index) => {
-  const groupId = `${position}Group`;
-  const group: Node<NodeData> = {
-    id: groupId,
-    type: "group",
-    position: { x: (index % 3) * (GROUP_SIZE + GROUP_GAP), y: Math.floor(index / 3) * (GROUP_SIZE + GROUP_GAP) },
-    data: { id: groupId, title: "" },
-    draggable: false,
-    style: { width: GROUP_SIZE, height: GROUP_SIZE, background: "#c9c9c9" },
-  };
-
-  const nodes: Node<NodeData>[] = NODE_POSITION.map((nodePosition, index) => {
-    const id = `${position}-${nodePosition}`;
-    return {
-      id,
-      extent: "parent",
-      position: {
-        x: (index % 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP / 2,
-        y: Math.floor(index / 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP / 2,
-      },
-      type: "textUpdater",
-      data: { id, title: "" },
+const initialNodes: Node<NodeData>[] = Object.values(Position)
+  .map((position, index) => {
+    const groupId = `${position}Group`;
+    const group: Node<NodeData> = {
+      id: groupId,
+      type: "group",
+      position: { x: (index % 3) * (GROUP_SIZE + GROUP_GAP), y: Math.floor(index / 3) * (GROUP_SIZE + GROUP_GAP) },
+      data: { id: groupId, title: "" },
       draggable: false,
-      parentNode: `${position}Group`,
-      style: { width: NODE_SIZE, height: NODE_SIZE },
+      style: { width: GROUP_SIZE, height: GROUP_SIZE },
     };
-  });
 
-  return [group, ...nodes];
-}).flat();
+    const nodes: Node<NodeData>[] = Object.values(Position).map((nodePosition, index) => {
+      const id = `${position}-${nodePosition}`;
+      return {
+        id,
+        extent: "parent",
+        position: {
+          x: (index % 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP,
+          y: Math.floor(index / 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP,
+        },
+        type: "textUpdater",
+        data: { id, title: "" },
+        draggable: false,
+        parentNode: `${position}Group`,
+        style: { width: NODE_SIZE, height: NODE_SIZE },
+      };
+    });
+
+    return [group, ...nodes];
+  })
+  .flat();
 
 const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -112,13 +103,13 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const saveDebounced = useDebounce(save, 300);
 
-  const changeTitle = useCallback(
-    (id: string, title: string) => {
+  const changeData = useCallback(
+    (id: string, prop: "title" | "description", value: string) => {
       setNodes((prevNodes) => {
         return produce(prevNodes, (draft) => {
           const node = draft.find((node) => node.id === id);
           if (node) {
-            node.data.title = title;
+            node.data[prop] = value;
           }
         });
       });
@@ -144,7 +135,7 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
         onNodesChange,
         save,
         resetNodes,
-        changeTitle,
+        changeData,
       }}
     >
       <MandalartStateContext.Provider
