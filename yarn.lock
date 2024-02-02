@@ -252,6 +252,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.14.8, @babel/runtime@npm:^7.19.0, @babel/runtime@npm:^7.21.0":
+  version: 7.23.9
+  resolution: "@babel/runtime@npm:7.23.9"
+  dependencies:
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: e71205fdd7082b2656512cc98e647d9ea7e222e4fe5c36e9e5adc026446fcc3ba7b3cdff8b0b694a0b78bb85db83e7b1e3d4c56ef90726682b74f13249cf952d
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.22.15":
   version: 7.22.15
   resolution: "@babel/template@npm:7.22.15"
@@ -1111,6 +1120,41 @@ __metadata:
   version: 4.9.4
   resolution: "@rollup/rollup-win32-x64-msvc@npm:4.9.4"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@toss/react@npm:^1.6.1":
+  version: 1.6.1
+  resolution: "@toss/react@npm:1.6.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.14.8"
+    "@toss/storage": "npm:^1.3.1"
+    "@toss/utils": "npm:^1.4.6"
+    classnames: "npm:^2.3.1"
+    lodash.debounce: "npm:^4.0.8"
+    lodash.throttle: "npm:^4.1.1"
+  peerDependencies:
+    react: ^16.0.0 || ^17.0.0 || ^18
+  checksum: 0893ced511b8c0ae55451f1a7056d95887a3fd43531fb30699c1208605d58c32250dd242bbcd4316f8f507b8f367d46c65bbe1b344d9bf686f1d02968cbeb742
+  languageName: node
+  linkType: hard
+
+"@toss/storage@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "@toss/storage@npm:1.3.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.19.0"
+  checksum: ed2c7702f3f90ee502bc11aeec55dcd4af59e9e1b90f84cff98d3e106680c70e1b8796eb77947de16929d1af8c42fdb01fdcc0af0b5c1d0deb7e8a8e0ef61b2c
+  languageName: node
+  linkType: hard
+
+"@toss/utils@npm:^1.4.6":
+  version: 1.4.6
+  resolution: "@toss/utils@npm:1.4.6"
+  dependencies:
+    "@babel/runtime": "npm:^7.14.8"
+    date-fns: "npm:^2.25.0"
+  checksum: d1c956c1ab2bb4039e3f8df36ae4bbccf3247a651768a27412e3189582ea32551b9f892e8965c62fe478f82e74f4837eec697bf2431893bb233a2cf8a6755448
   languageName: node
   linkType: hard
 
@@ -1980,6 +2024,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"classnames@npm:^2.3.1":
+  version: 2.5.1
+  resolution: "classnames@npm:2.5.1"
+  checksum: afff4f77e62cea2d79c39962980bf316bacb0d7c49e13a21adaadb9221e1c6b9d3cdb829d8bb1b23c406f4e740507f37e1dcf506f7e3b7113d17c5bab787aa69
+  languageName: node
+  linkType: hard
+
 "clean-stack@npm:^2.0.0":
   version: 2.2.0
   resolution: "clean-stack@npm:2.2.0"
@@ -2174,6 +2225,15 @@ __metadata:
     d3-selection: "npm:2 - 3"
     d3-transition: "npm:2 - 3"
   checksum: ee2036479049e70d8c783d594c444fe00e398246048e3f11a59755cd0e21de62ece3126181b0d7a31bf37bcf32fd726f83ae7dea4495ff86ec7736ce5ad36fd3
+  languageName: node
+  linkType: hard
+
+"date-fns@npm:^2.25.0":
+  version: 2.30.0
+  resolution: "date-fns@npm:2.30.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.21.0"
+  checksum: e4b521fbf22bc8c3db332bbfb7b094fd3e7627de0259a9d17c7551e2d2702608a7307a449206065916538e384f37b181565447ce2637ae09828427aed9cb5581
   languageName: node
   linkType: hard
 
@@ -3276,10 +3336,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash.debounce@npm:^4.0.8":
+  version: 4.0.8
+  resolution: "lodash.debounce@npm:4.0.8"
+  checksum: 762998a63e095412b6099b8290903e0a8ddcb353ac6e2e0f2d7e7d03abd4275fe3c689d88960eb90b0dde4f177554d51a690f22a343932ecbc50a5d111849987
+  languageName: node
+  linkType: hard
+
 "lodash.merge@npm:^4.6.2":
   version: 4.6.2
   resolution: "lodash.merge@npm:4.6.2"
   checksum: 402fa16a1edd7538de5b5903a90228aa48eb5533986ba7fa26606a49db2572bf414ff73a2c9f5d5fd36b31c46a5d5c7e1527749c07cbcf965ccff5fbdf32c506
+  languageName: node
+  linkType: hard
+
+"lodash.throttle@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "lodash.throttle@npm:4.1.1"
+  checksum: 14628013e9e7f65ac904fc82fd8ecb0e55a9c4c2416434b1dd9cf64ae70a8937f0b15376a39a68248530adc64887ed0fe2b75204b2c9ec3eea1cb2d66ddd125d
   languageName: node
   linkType: hard
 
@@ -3360,6 +3434,7 @@ __metadata:
   dependencies:
     "@radix-ui/react-dialog": "npm:^1.0.5"
     "@radix-ui/react-slot": "npm:^1.0.2"
+    "@toss/react": "npm:^1.6.1"
     "@types/node": "npm:^20.10.7"
     "@types/react": "npm:^18.2.43"
     "@types/react-dom": "npm:^18.2.17"

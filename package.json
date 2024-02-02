@@ -12,6 +12,7 @@
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-slot": "^1.0.2",
+    "@toss/react": "^1.6.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "immer": "^10.0.3",
