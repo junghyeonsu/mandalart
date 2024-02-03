@@ -1,9 +1,17 @@
 import "reactflow/dist/style.css";
 
 import { Label } from "@radix-ui/react-label";
-import { RotateCcwIcon } from "lucide-react";
+import { toPng } from "html-to-image";
+import { ImageDownIcon, RotateCcwIcon } from "lucide-react";
 import { memo } from "react";
-import ReactFlow, { Background, Controls, MiniMap } from "reactflow";
+import ReactFlow, {
+  Background,
+  Controls,
+  getRectOfNodes,
+  getTransformForBounds,
+  MiniMap,
+  useReactFlow,
+} from "reactflow";
 
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTrigger } from "@/components/ui/drawer";
 import type { NodeId, PositionType } from "@/contexts/MandalartContext";
@@ -146,6 +154,7 @@ const Mandalart = () => {
   return (
     <>
       <ResetButton />
+      <ImageDownloadButton />
 
       <div className="w-[100vh] h-[100vh]">
         <ReactFlow
@@ -165,6 +174,38 @@ const Mandalart = () => {
     </>
   );
 };
+
+function downloadImage(dataUrl: string) {
+  const a = document.createElement("a");
+
+  a.setAttribute("download", "mandalart.png");
+  a.setAttribute("href", dataUrl);
+  a.click();
+}
+
+const ImageDownloadButton = memo(() => {
+  const { getNodes } = useReactFlow();
+
+  const download = () => {
+    const nodesBounds = getRectOfNodes(getNodes());
+    const transform = getTransformForBounds(nodesBounds, 1024, 768, 0.5, 2);
+
+    const viewport = document.querySelector(".react-flow__viewport") as HTMLElement;
+
+    toPng(viewport, {
+      backgroundColor: "#ffffff",
+      width: 1024,
+      height: 768,
+      style: {
+        width: `1024`,
+        height: `768`,
+        transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
+      },
+    }).then(downloadImage);
+  };
+
+  return <ImageDownIcon onClick={download} className="fixed top-4 right-12 w-6 h-6 text-primary cursor-pointer z-10" />;
+});
 
 const ResetButton = memo(() => {
   const { resetNodes } = useMandalartDispatch();

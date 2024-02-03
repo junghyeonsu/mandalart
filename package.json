@@ -16,6 +16,7 @@
     "@toss/react": "^1.6.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "html-to-image": "^1.11.11",
     "immer": "^10.0.3",
     "lucide-react": "^0.309.0",
     "react": "^18.2.0",
