@@ -20,7 +20,7 @@ interface MandalartContextDispatch {
 
   resetNodes: () => void;
 
-  changeData: (id: string, prop: "title" | "description", value: string) => void;
+  changeData: (id: NodeId, prop: "title" | "description", value: string) => void;
 }
 
 const MandalartStateContext = createContext<MandalartContextState | undefined>(undefined);
@@ -33,7 +33,7 @@ const GROUP_GAP = 20;
 const NODE_SIZE = 90;
 const NODE_GAP = 8;
 
-export const Position = {
+const Position = {
   topLeft: "topLeft",
   topCenter: "topCenter",
   topRight: "topRight",
@@ -43,17 +43,20 @@ export const Position = {
   bottomLeft: "bottomLeft",
   bottomCenter: "bottomCenter",
   bottomRight: "bottomRight",
-};
+} as const;
+
+export type PositionType = keyof typeof Position;
+export type NodeId = `${PositionType}-${PositionType}` | `${PositionType}Group`;
 
 export interface NodeData {
-  id: string;
+  id: NodeId;
   title: string;
   description?: string;
 }
 
 const initialNodes: Node<NodeData>[] = Object.values(Position)
   .map((position, index) => {
-    const groupId = `${position}Group`;
+    const groupId = `${position}Group` as const;
     const group: Node<NodeData> = {
       id: groupId,
       type: "group",
@@ -64,7 +67,7 @@ const initialNodes: Node<NodeData>[] = Object.values(Position)
     };
 
     const nodes: Node<NodeData>[] = Object.values(Position).map((nodePosition, index) => {
-      const id = `${position}-${nodePosition}`;
+      const id = `${position}-${nodePosition}` as const;
       return {
         id,
         extent: "parent",
@@ -104,12 +107,28 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
   const saveDebounced = useDebounce(save, 300);
 
   const changeData = useCallback(
-    (id: string, prop: "title" | "description", value: string) => {
+    (id: NodeId, prop: "title" | "description", value: string) => {
       setNodes((prevNodes) => {
         return produce(prevNodes, (draft) => {
           const node = draft.find((node) => node.id === id);
+          const [groupPosition, cellPosition] = id.split("-") as [PositionType, PositionType];
+          const isCenterGroupCell = groupPosition === "centerCenter";
+          const isCenterCell = cellPosition === "centerCenter";
+
           if (node) {
             node.data[prop] = value;
+
+            if (isCenterGroupCell) {
+              const relatedCell = draft.find((node) => node.id === `${cellPosition}-centerCenter`);
+              if (relatedCell) {
+                relatedCell.data[prop] = value;
+              }
+            } else if (isCenterCell) {
+              const relatedCell = draft.find((node) => node.id === `centerCenter-${groupPosition}`);
+              if (relatedCell) {
+                relatedCell.data[prop] = value;
+              }
+            }
           }
         });
       });
