@@ -80,7 +80,7 @@ const PreviewBoard = ({ id }: { id: NodeId }) => {
   const [groupPosition, cellPosition] = id.split("-") as [PositionType, PositionType];
 
   return (
-    <div className={`grid grid-cols-3 w-[${CELL_SIZE * 3 * 3}px] h-[155px] border rounded-sm bg-gray-100`}>
+    <div className={`grid grid-cols-3 w-[144px] h-[144px] border rounded-sm bg-gray-100`}>
       <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topLeft"} />
       <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topCenter"} />
       <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topRight"} />
@@ -123,7 +123,7 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
         </div>
       </DrawerTrigger>
       <DrawerContent>
-        <DrawerHeader>
+        <DrawerHeader className="flex items-center justify-center">
           <PreviewBoard id={id} />
         </DrawerHeader>
         <DrawerFooter>
