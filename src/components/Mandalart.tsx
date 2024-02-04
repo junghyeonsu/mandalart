@@ -7,8 +7,8 @@ import { memo } from "react";
 import ReactFlow, {
   Background,
   Controls,
-  getRectOfNodes,
-  getTransformForBounds,
+  getNodesBounds,
+  getViewportForBounds,
   MiniMap,
   useReactFlow,
 } from "reactflow";
@@ -23,7 +23,7 @@ const CELL_SIZE = 16;
 const PreviewCell = ({ cellPosition, isGroupSelected }: { cellPosition: PositionType; isGroupSelected: boolean }) => {
   return (
     <div
-      className={`grid grid-cols-3 w-[${CELL_SIZE * 3 + 4}px] h-[${CELL_SIZE * 3 + 4}px] ${
+      className={`grid grid-cols-3 w-[${CELL_SIZE * 3}px] h-[${CELL_SIZE * 3}px] ${
         isGroupSelected && "border-2 border-gray-900"
       }`}
     >
@@ -80,7 +80,7 @@ const PreviewBoard = ({ id }: { id: NodeId }) => {
   const [groupPosition, cellPosition] = id.split("-") as [PositionType, PositionType];
 
   return (
-    <div className={`grid grid-cols-3 w-[${CELL_SIZE * 3 * 3 + 4}px] border rounded-sm bg-gray-100`}>
+    <div className={`grid grid-cols-3 w-[${CELL_SIZE * 3 * 3}px] h-[155px] border rounded-sm bg-gray-100`}>
       <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topLeft"} />
       <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topCenter"} />
       <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topRight"} />
@@ -123,7 +123,7 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
         </div>
       </DrawerTrigger>
       <DrawerContent>
-        <DrawerHeader className="flex flex-col items-center justify-center">
+        <DrawerHeader>
           <PreviewBoard id={id} />
         </DrawerHeader>
         <DrawerFooter>
@@ -187,8 +187,8 @@ const ImageDownloadButton = memo(() => {
   const { getNodes } = useReactFlow();
 
   const download = () => {
-    const nodesBounds = getRectOfNodes(getNodes());
-    const transform = getTransformForBounds(nodesBounds, 1024, 768, 0.5, 2);
+    const nodesBounds = getNodesBounds(getNodes());
+    const transform = getViewportForBounds(nodesBounds, 1024, 768, 0.5, 2);
 
     const viewport = document.querySelector(".react-flow__viewport") as HTMLElement;
 
@@ -199,7 +199,7 @@ const ImageDownloadButton = memo(() => {
       style: {
         width: `1024`,
         height: `768`,
-        transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
+        transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.zoom})`,
       },
     }).then(downloadImage);
   };
