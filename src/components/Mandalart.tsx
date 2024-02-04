@@ -114,7 +114,7 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
     <Drawer>
       <DrawerTrigger asChild>
         <div
-          className={`w-[90px] h-[90px] flex flex-col items-center justify-center border border-primary rounded-sm cursor-pointer break-all overflow-auto ${
+          className={`w-[90px] h-[90px] flex flex-col items-center justify-center border border-primary rounded-sm cursor-pointer break-all overflow-auto text-center ${
             isCenterCell ? "bg-gray-100" : "bg-white"
           }`}
         >
