@@ -93,11 +93,10 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const save = useCallback(() => {
     if (rfInstance) {
-      console.log("save 실행!", nodes);
       const flow = rfInstance.toObject();
       localStorage.setItem(FLOW_KEY, JSON.stringify(flow));
     }
-  }, [nodes, rfInstance]);
+  }, [rfInstance]);
 
   const resetNodes = useCallback(() => {
     setNodes(initialNodes);
@@ -109,33 +108,44 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
   const changeData = useCallback(
     (id: NodeId, prop: "title" | "description", value: string) => {
       setNodes((prevNodes) => {
+        const [groupPosition, cellPosition] = id.split("-") as [PositionType, PositionType];
+        const isCenterGroupCell = groupPosition === "centerCenter";
+        const isCenterCell = cellPosition === "centerCenter";
+
         return produce(prevNodes, (draft) => {
           const node = draft.find((node) => node.id === id);
-          const [groupPosition, cellPosition] = id.split("-") as [PositionType, PositionType];
-          const isCenterGroupCell = groupPosition === "centerCenter";
-          const isCenterCell = cellPosition === "centerCenter";
+          if (node) node.data[prop] = value;
 
-          if (node) {
-            node.data[prop] = value;
-
-            if (isCenterGroupCell) {
-              const relatedCell = draft.find((node) => node.id === `${cellPosition}-centerCenter`);
-              if (relatedCell) {
-                relatedCell.data[prop] = value;
-              }
-            } else if (isCenterCell) {
-              const relatedCell = draft.find((node) => node.id === `centerCenter-${groupPosition}`);
-              if (relatedCell) {
-                relatedCell.data[prop] = value;
-              }
-            }
+          if (isCenterGroupCell) {
+            const relatedCell = draft.find((node) => node.id === `${cellPosition}-centerCenter`);
+            if (relatedCell) relatedCell.data[prop] = value;
+          } else if (isCenterCell) {
+            const relatedCell = draft.find((node) => node.id === `centerCenter-${groupPosition}`);
+            if (relatedCell) relatedCell.data[prop] = value;
           }
         });
       });
+
       saveDebounced();
     },
     [saveDebounced, setNodes],
   );
+
+  // const changeData = (id: NodeId, prop: "title" | "description", value: string) => {
+  //   const targetNode = nodes.find((node) => node.id === id);
+  //   if (!targetNode) return;
+
+  //   const changedNode = {
+  //     ...targetNode,
+  //     data: {
+  //       ...targetNode.data,
+  //       [prop]: value,
+  //     },
+  //   };
+  //   setNodes((prevNodes) => {
+  //     return prevNodes.map((node) => (node.id === id ? changedNode : node));
+  //   });
+  // };
 
   // init
   useEffect(() => {

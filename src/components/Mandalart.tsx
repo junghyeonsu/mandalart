@@ -3,7 +3,7 @@ import "reactflow/dist/style.css";
 import { Label } from "@radix-ui/react-label";
 import { toPng } from "html-to-image";
 import { ImageDownIcon, RotateCcwIcon } from "lucide-react";
-import { memo } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -96,19 +96,31 @@ const PreviewBoard = ({ id }: { id: NodeId }) => {
 
 const CustomTextNode = ({ data }: { data: NodeData }) => {
   const { changeData } = useMandalartDispatch();
-
   const { id, title, description } = data;
-
   const [, cellPosition] = id.split("-") as [PositionType, PositionType];
   const isCenterCell = cellPosition === "centerCenter";
 
-  const onChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
-    changeData(id, "title", e.target.value);
-  };
+  // NOTE: 크롬에서 한글 조합이 안되는 버그가 있어서 localTitle을 사용합니다.
+  const [localTitle, setLocalTitle] = useState(title);
+  const [localDescription, setLocalDescription] = useState(description);
 
-  const onChangeDescription = (e: React.ChangeEvent<HTMLInputElement>) => {
-    changeData(id, "description", e.target.value);
-  };
+  useEffect(() => setLocalTitle(title), [title]);
+  useEffect(() => setLocalDescription(description), [description]);
+
+  const onChangeTitle = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setLocalTitle(e.target.value);
+      changeData(id, "title", e.target.value);
+    },
+    [changeData, id],
+  );
+  const onChangeDescription = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setLocalDescription(e.target.value);
+      changeData(id, "description", e.target.value);
+    },
+    [changeData, id],
+  );
 
   return (
     <Drawer>
@@ -118,8 +130,8 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
             isCenterCell ? "bg-gray-100" : "bg-white"
           }`}
         >
-          <p className="text-primary font-bold text-sm">{title}</p>
-          <p className="text-muted-foreground text-xs">{description}</p>
+          <p className="text-primary font-bold text-sm">{localTitle}</p>
+          <p className="text-muted-foreground text-xs">{localDescription}</p>
         </div>
       </DrawerTrigger>
       <DrawerContent>
@@ -130,12 +142,12 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
           <div className="flex flex-col gap-4">
             <div className="grid w-full gap-1.5">
               <Label htmlFor="title">만다라트 제목</Label>
-              <Input id="title" value={title} onInput={onChangeTitle} className={`resize-none`} />
+              <Input id="title" value={localTitle} onChange={onChangeTitle} />
               <p className="text-xs text-muted-foreground">핵심적인 문장을 적어주세요.</p>
             </div>
             <div className="grid w-full gap-1.5">
               <Label htmlFor="title">만다라트 설명</Label>
-              <Input id="title" value={description} onInput={onChangeDescription} className={`resize-none`} />
+              <Input id="title" value={localDescription} onChange={onChangeDescription} />
               <p className="text-xs text-muted-foreground">해당 만다라트에 대한 설명을 적어주세요.</p>
             </div>
           </div>
