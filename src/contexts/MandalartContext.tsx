@@ -28,9 +28,9 @@ const MandalartDispatchContext = createContext<MandalartContextDispatch | undefi
 
 const FLOW_KEY = "mandalart-flow";
 
-const GROUP_SIZE = 300;
+const GROUP_SIZE = 390;
 const GROUP_GAP = 20;
-const NODE_SIZE = 90;
+const NODE_SIZE = 120;
 const NODE_GAP = 8;
 
 const Position = {
@@ -130,22 +130,6 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
     },
     [saveDebounced, setNodes],
   );
-
-  // const changeData = (id: NodeId, prop: "title" | "description", value: string) => {
-  //   const targetNode = nodes.find((node) => node.id === id);
-  //   if (!targetNode) return;
-
-  //   const changedNode = {
-  //     ...targetNode,
-  //     data: {
-  //       ...targetNode.data,
-  //       [prop]: value,
-  //     },
-  //   };
-  //   setNodes((prevNodes) => {
-  //     return prevNodes.map((node) => (node.id === id ? changedNode : node));
-  //   });
-  // };
 
   // init
   useEffect(() => {
