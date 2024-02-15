@@ -13,6 +13,17 @@ import ReactFlow, {
   useReactFlow,
 } from "reactflow";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTrigger } from "@/components/ui/drawer";
 import type { NodeId, PositionType } from "@/contexts/MandalartContext";
 import { type NodeData, useMandalartDispatch, useMandalartState } from "@/contexts/MandalartContext";
@@ -222,7 +233,21 @@ const ImageDownloadButton = memo(() => {
 const ResetButton = memo(() => {
   const { resetNodes } = useMandalartDispatch();
   return (
-    <RotateCcwIcon onClick={resetNodes} className="fixed top-4 right-4 w-6 h-6 text-primary cursor-pointer z-10" />
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <RotateCcwIcon className="fixed top-4 right-4 w-6 h-6 text-primary cursor-pointer z-10" />
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>정말로 리셋하시겠어요?</AlertDialogTitle>
+          <AlertDialogDescription>모든 데이터가 날아가요.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>취소하기</AlertDialogCancel>
+          <AlertDialogAction onClick={resetNodes}>삭제하기</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 });
 
