@@ -146,8 +146,18 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
         </div>
       </DrawerTrigger>
       <DrawerContent>
-        <DrawerHeader className="flex items-center justify-center">
-          <PreviewBoard id={id} />
+        <DrawerHeader className="flex items-center justify-evenly">
+          <div className="flex flex-col gap-2 items-center justify-center">
+            <PreviewBoard id={id} />
+            <span className="text-gray-500 text-xs">현재 칸</span>
+          </div>
+          <div className="flex flex-col gap-2 items-center justify-center">
+            <div className="flex flex-col items-center justify-center w-[144px] h-[144px] border border-primary rounded-sm break-all overflow-auto text-center">
+              <p className="text-primary font-bold text-[16px] whitespace-pre">{localTitle}</p>
+              <p className="text-muted-foreground text-sm whitespace-pre">{localDescription}</p>
+            </div>
+            <span className="text-gray-500 text-xs">미리보기</span>
+          </div>
         </DrawerHeader>
         <DrawerFooter>
           <div className="flex flex-col gap-4">
