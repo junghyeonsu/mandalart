@@ -29,7 +29,7 @@ import {
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTrigger } from "@/components/ui/drawer";
 import type { NodeId, PositionType } from "@/contexts/MandalartContext";
 import { useMandalartDispatch, useMandalartState } from "@/contexts/MandalartContext";
-import { useMandalartDataById, useMandalartDatas } from "@/stores/mandalart";
+import { NodePosition, useMandalartDataById, useMandalartDatas } from "@/stores/mandalart";
 
 import { Textarea } from "./ui/textarea";
 
@@ -43,47 +43,47 @@ const PreviewCell = ({ cellPosition, isGroupSelected }: { cellPosition: Position
     >
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "topLeft" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.topLeft ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "topCenter" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.topCenter ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "topRight" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.topRight ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "centerLeft" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.centerLeft ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "centerCenter" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.centerCenter ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "centerRight" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.centerRight ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "bottomLeft" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.bottomLeft ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "bottomCenter" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.bottomCenter ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "bottomRight" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.bottomRight ? "bg-black" : "bg-white"
         }`}
       ></div>
     </div>
@@ -95,15 +95,15 @@ const PreviewBoard = ({ id }: { id: NodeId }) => {
 
   return (
     <div className={`grid grid-cols-3 w-[144px] h-[144px] border rounded-sm bg-gray-100`}>
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topLeft"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topCenter"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topRight"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "centerLeft"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "centerCenter"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "centerRight"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "bottomLeft"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "bottomCenter"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "bottomRight"} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.topLeft} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.topCenter} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.topRight} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.centerLeft} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.centerCenter} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.centerRight} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.bottomLeft} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.bottomCenter} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.bottomRight} />
     </div>
   );
 };
@@ -113,7 +113,7 @@ const CustomTextNode = (props: NodeProps) => {
   const { changeData } = useMandalartDispatch();
   const data = useMandalartDataById(id);
   const [, cellPosition] = id.split("-") as [PositionType, PositionType];
-  const isCenterCell = cellPosition === "centerCenter";
+  const isCenterCell = cellPosition === NodePosition.centerCenter;
 
   const onChangeTitle = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {

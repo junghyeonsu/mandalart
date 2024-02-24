@@ -3,27 +3,21 @@ import { create } from "zustand";
 
 import type { NodeData } from "@/contexts/MandalartContext";
 
-const Position = {
-  topLeft: "topLeft",
-  topCenter: "topCenter",
-  topRight: "topRight",
-  centerLeft: "centerLeft",
-  centerCenter: "centerCenter",
-  centerRight: "centerRight",
-  bottomLeft: "bottomLeft",
-  bottomCenter: "bottomCenter",
-  bottomRight: "bottomRight",
+export const NodePosition = {
+  topLeft: "11",
+  topCenter: "12",
+  topRight: "13",
+  centerLeft: "21",
+  centerCenter: "22",
+  centerRight: "23",
+  bottomLeft: "31",
+  bottomCenter: "32",
+  bottomRight: "33",
 } as const;
 
-const initialDatas: NodeData[] = Object.values(Position)
+const initialDatas: NodeData[] = Object.values(NodePosition)
   .map((position) => {
-    const groupId = `${position}Group` as const;
-    const group: NodeData = {
-      id: groupId,
-      title: "",
-    };
-
-    const nodes: NodeData[] = Object.values(Position).map((nodePosition) => {
+    const nodes: NodeData[] = Object.values(NodePosition).map((nodePosition) => {
       const id = `${position}-${nodePosition}` as const;
       return {
         id,
@@ -31,7 +25,7 @@ const initialDatas: NodeData[] = Object.values(Position)
       };
     });
 
-    return [group, ...nodes];
+    return nodes;
   })
   .flat();
 

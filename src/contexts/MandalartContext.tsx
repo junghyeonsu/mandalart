@@ -6,6 +6,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import type { OnNodesChange, ReactFlowInstance, ReactFlowJsonObject } from "reactflow";
 import { type Node, useNodesState } from "reactflow";
 
+import { NodePosition } from "@/stores/mandalart";
 import { useMandalartActions, useMandalartDatas } from "@/stores/mandalart";
 
 interface MandalartContextState {
@@ -36,20 +37,8 @@ const GROUP_GAP = 20;
 const NODE_SIZE = 120;
 const NODE_GAP = 8;
 
-const Position = {
-  topLeft: "topLeft",
-  topCenter: "topCenter",
-  topRight: "topRight",
-  centerLeft: "centerLeft",
-  centerCenter: "centerCenter",
-  centerRight: "centerRight",
-  bottomLeft: "bottomLeft",
-  bottomCenter: "bottomCenter",
-  bottomRight: "bottomRight",
-} as const;
-
-export type PositionType = keyof typeof Position;
-export type NodeId = `${PositionType}-${PositionType}` | `${PositionType}Group`;
+export type PositionType = (typeof NodePosition)[keyof typeof NodePosition];
+export type NodeId = `${PositionType}-${PositionType}`;
 
 export interface NodeData {
   id: NodeId;
@@ -57,36 +46,29 @@ export interface NodeData {
   description?: string;
 }
 
-const initialNodes: Node<NodeData>[] = Object.values(Position)
+const initialNodes: Node<NodeData>[] = Object.values(NodePosition)
   .map((position, index) => {
-    const groupId = `${position}Group` as const;
-    const group: Node<NodeData> = {
-      id: groupId,
-      type: "group",
-      position: { x: (index % 3) * (GROUP_SIZE + GROUP_GAP), y: Math.floor(index / 3) * (GROUP_SIZE + GROUP_GAP) },
-      data: { id: groupId, title: "" },
-      draggable: false,
-      style: { width: GROUP_SIZE, height: GROUP_SIZE },
+    const groupPosition = {
+      x: (index % 3) * (GROUP_SIZE + GROUP_GAP),
+      y: Math.floor(index / 3) * (GROUP_SIZE + GROUP_GAP),
     };
 
-    const nodes: Node<NodeData>[] = Object.values(Position).map((nodePosition, index) => {
+    const nodes: Node<NodeData>[] = Object.values(NodePosition).map((nodePosition, index) => {
       const id = `${position}-${nodePosition}` as const;
       return {
         id,
-        extent: "parent",
         position: {
-          x: (index % 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP,
-          y: Math.floor(index / 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP,
+          x: (index % 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP + groupPosition.x,
+          y: Math.floor(index / 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP + groupPosition.y,
         },
         type: "textUpdater",
         data: { id, title: "", description: "" },
         draggable: false,
-        parentNode: `${position}Group`,
         style: { width: NODE_SIZE, height: NODE_SIZE },
       };
     });
 
-    return [group, ...nodes];
+    return [...nodes];
   })
   .flat();
 
@@ -116,8 +98,8 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
     (id: NodeId, prop: "title" | "description", value: string) => {
       setNodes((prevNodes) => {
         const [groupPosition, cellPosition] = id.split("-") as [PositionType, PositionType];
-        const isCenterGroupCell = groupPosition === "centerCenter";
-        const isCenterCell = cellPosition === "centerCenter";
+        const isCenterGroupCell = groupPosition === NodePosition.centerCenter;
+        const isCenterCell = cellPosition === NodePosition.centerCenter;
 
         return produce(prevNodes, (draft) => {
           const node = draft.find((node) => node.id === id);
@@ -130,13 +112,13 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
             const relatedCell = draft.find((node) => node.id === `${cellPosition}-centerCenter`);
             if (relatedCell) {
               relatedCell.data[prop] = value;
-              updateNode(`${cellPosition}-centerCenter`, { [prop]: value });
+              updateNode(`${cellPosition}-${NodePosition.centerCenter}`, { [prop]: value });
             }
           } else if (isCenterCell) {
             const relatedCell = draft.find((node) => node.id === `centerCenter-${groupPosition}`);
             if (relatedCell) {
               relatedCell.data[prop] = value;
-              updateNode(`centerCenter-${groupPosition}`, { [prop]: value });
+              updateNode(`${NodePosition.centerCenter}-${groupPosition}`, { [prop]: value });
             }
           }
         });
