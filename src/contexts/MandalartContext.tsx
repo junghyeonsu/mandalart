@@ -6,6 +6,8 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import type { OnNodesChange, ReactFlowInstance, ReactFlowJsonObject } from "reactflow";
 import { type Node, useNodesState } from "reactflow";
 
+import { useMandalartActions, useMandalartDatas } from "@/stores/mandalart";
+
 interface MandalartContextState {
   nodes: Node[];
 }
@@ -26,7 +28,8 @@ interface MandalartContextDispatch {
 const MandalartStateContext = createContext<MandalartContextState | undefined>(undefined);
 const MandalartDispatchContext = createContext<MandalartContextDispatch | undefined>(undefined);
 
-const FLOW_KEY = "mandalart-flow";
+const MANDAL_ART_FLOW_STORAGE_KEY = "mandalart-flow";
+const MANDAL_ART_DATA_STORAGE_KEY = "mandalart-data";
 
 const GROUP_SIZE = 390;
 const GROUP_GAP = 20;
@@ -76,7 +79,7 @@ const initialNodes: Node<NodeData>[] = Object.values(Position)
           y: Math.floor(index / 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP,
         },
         type: "textUpdater",
-        data: { id, title: "" },
+        data: { id, title: "", description: "" },
         draggable: false,
         parentNode: `${position}Group`,
         style: { width: NODE_SIZE, height: NODE_SIZE },
@@ -89,18 +92,22 @@ const initialNodes: Node<NodeData>[] = Object.values(Position)
 
 const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const datas = useMandalartDatas();
+  const { updateNode } = useMandalartActions();
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
 
   const save = useCallback(() => {
     if (rfInstance) {
       const flow = rfInstance.toObject();
-      localStorage.setItem(FLOW_KEY, JSON.stringify(flow));
+      localStorage.setItem(MANDAL_ART_FLOW_STORAGE_KEY, JSON.stringify(flow));
+      localStorage.setItem(MANDAL_ART_DATA_STORAGE_KEY, JSON.stringify(datas));
     }
-  }, [rfInstance]);
+  }, [datas, rfInstance]);
 
   const resetNodes = useCallback(() => {
     setNodes(initialNodes);
-    localStorage.removeItem(FLOW_KEY);
+    localStorage.removeItem(MANDAL_ART_FLOW_STORAGE_KEY);
+    localStorage.removeItem(MANDAL_ART_DATA_STORAGE_KEY);
   }, [setNodes]);
 
   const saveDebounced = useDebounce(save, 300);
@@ -114,32 +121,49 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
 
         return produce(prevNodes, (draft) => {
           const node = draft.find((node) => node.id === id);
-          if (node) node.data[prop] = value;
+          if (node) {
+            node.data[prop] = value;
+            updateNode(id, { [prop]: value });
+          }
 
           if (isCenterGroupCell) {
             const relatedCell = draft.find((node) => node.id === `${cellPosition}-centerCenter`);
-            if (relatedCell) relatedCell.data[prop] = value;
+            if (relatedCell) {
+              relatedCell.data[prop] = value;
+              updateNode(`${cellPosition}-centerCenter`, { [prop]: value });
+            }
           } else if (isCenterCell) {
             const relatedCell = draft.find((node) => node.id === `centerCenter-${groupPosition}`);
-            if (relatedCell) relatedCell.data[prop] = value;
+            if (relatedCell) {
+              relatedCell.data[prop] = value;
+              updateNode(`centerCenter-${groupPosition}`, { [prop]: value });
+            }
           }
         });
       });
 
       saveDebounced();
     },
-    [saveDebounced, setNodes],
+    [saveDebounced, setNodes, updateNode],
   );
 
   // init
   useEffect(() => {
-    const flow = localStorage.getItem(FLOW_KEY);
+    const flow = localStorage.getItem(MANDAL_ART_FLOW_STORAGE_KEY);
+    const data = localStorage.getItem(MANDAL_ART_DATA_STORAGE_KEY);
 
     if (flow) {
       const flowData = JSON.parse(flow) as ReactFlowJsonObject;
       setNodes(flowData.nodes);
     }
-  }, [setNodes]);
+
+    if (data) {
+      const dataData = JSON.parse(data) as NodeData[];
+      dataData.forEach((node) => {
+        updateNode(node.id, node);
+      });
+    }
+  }, [setNodes, updateNode]);
 
   return (
     <MandalartDispatchContext.Provider

@@ -2,8 +2,10 @@ import "reactflow/dist/style.css";
 
 import { Label } from "@radix-ui/react-label";
 import { toPng } from "html-to-image";
-import { ImageDownIcon, RotateCcwIcon } from "lucide-react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { ClipboardCopyIcon, ImageDownIcon, RotateCcwIcon } from "lucide-react";
+import { compressToBase64, decompressFromBase64 } from "lz-string";
+import { memo, useCallback, useEffect } from "react";
+import type { NodeProps } from "reactflow";
 import ReactFlow, {
   Background,
   Controls,
@@ -26,7 +28,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTrigger } from "@/components/ui/drawer";
 import type { NodeId, PositionType } from "@/contexts/MandalartContext";
-import { type NodeData, useMandalartDispatch, useMandalartState } from "@/contexts/MandalartContext";
+import { useMandalartDispatch, useMandalartState } from "@/contexts/MandalartContext";
+import { useMandalartDataById, useMandalartDatas } from "@/stores/mandalart";
 
 import { Textarea } from "./ui/textarea";
 
@@ -105,29 +108,21 @@ const PreviewBoard = ({ id }: { id: NodeId }) => {
   );
 };
 
-const CustomTextNode = ({ data }: { data: NodeData }) => {
+const CustomTextNode = (props: NodeProps) => {
+  const id = props.id as NodeId;
   const { changeData } = useMandalartDispatch();
-  const { id, title, description } = data;
+  const data = useMandalartDataById(id);
   const [, cellPosition] = id.split("-") as [PositionType, PositionType];
   const isCenterCell = cellPosition === "centerCenter";
 
-  // NOTE: 크롬에서 한글 조합이 안되는 버그가 있어서 localTitle을 사용합니다.
-  const [localTitle, setLocalTitle] = useState(title);
-  const [localDescription, setLocalDescription] = useState(description);
-
-  useEffect(() => setLocalTitle(title), [title]);
-  useEffect(() => setLocalDescription(description), [description]);
-
   const onChangeTitle = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setLocalTitle(e.target.value);
       changeData(id, "title", e.target.value);
     },
     [changeData, id],
   );
   const onChangeDescription = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setLocalDescription(e.target.value);
       changeData(id, "description", e.target.value);
     },
     [changeData, id],
@@ -141,8 +136,8 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
             isCenterCell ? "bg-gray-100" : "bg-white"
           }`}
         >
-          <p className="text-primary font-bold text-sm whitespace-pre">{localTitle}</p>
-          <p className="text-muted-foreground text-xs whitespace-pre">{localDescription}</p>
+          <p className="text-primary font-bold text-sm whitespace-pre">{data?.title}</p>
+          <p className="text-muted-foreground text-xs whitespace-pre">{data?.description}</p>
         </div>
       </DrawerTrigger>
       <DrawerContent>
@@ -153,8 +148,8 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
           </div>
           <div className="flex flex-col gap-2 items-center justify-center">
             <div className="flex flex-col items-center justify-center w-[144px] h-[144px] border border-primary rounded-sm break-all overflow-auto text-center">
-              <p className="text-primary font-bold text-[16px] whitespace-pre">{localTitle}</p>
-              <p className="text-muted-foreground text-sm whitespace-pre">{localDescription}</p>
+              <p className="text-primary font-bold text-[16px] whitespace-pre">{data?.title}</p>
+              <p className="text-muted-foreground text-sm whitespace-pre">{data?.description}</p>
             </div>
             <span className="text-gray-500 text-xs">미리보기</span>
           </div>
@@ -163,12 +158,12 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
           <div className="flex flex-col gap-4">
             <div className="grid w-full gap-1.5">
               <Label htmlFor="title">만다라트 제목</Label>
-              <Textarea id="title" value={localTitle} onChange={onChangeTitle} />
+              <Textarea id="title" value={data?.title} onChange={onChangeTitle} />
               <p className="text-xs text-muted-foreground">핵심적인 문장을 적어주세요.</p>
             </div>
             <div className="grid w-full gap-1.5">
               <Label htmlFor="title">만다라트 설명</Label>
-              <Textarea id="title" value={localDescription} onChange={onChangeDescription} />
+              <Textarea id="title" value={data?.description} onChange={onChangeDescription} />
               <p className="text-xs text-muted-foreground">해당 만다라트에 대한 설명을 적어주세요.</p>
             </div>
           </div>
@@ -181,13 +176,35 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
 const nodeTypes = { textUpdater: CustomTextNode };
 
 const Mandalart = () => {
+  const datas = useMandalartDatas();
   const { nodes } = useMandalartState();
   const { onNodesChange, setRfInstance } = useMandalartDispatch();
+
+  useEffect(() => {
+    // sync datas to nodes
+  }, [datas]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const data = url.searchParams.get("data");
+
+    if (data) {
+      const decompressed = decompressFromBase64(data);
+
+      try {
+        const parsed = JSON.parse(decompressed);
+        console.log("parsed", parsed);
+      } catch (error) {
+        console.warn("데이터를 파싱하는데 실패했습니다.");
+      }
+    }
+  }, []);
 
   return (
     <>
       <ResetButton />
       <ImageDownloadButton />
+      <CopyUrlButton />
 
       <div className="w-[100vh] h-[100vh]">
         <ReactFlow
@@ -215,6 +232,25 @@ function downloadImage(dataUrl: string) {
   a.setAttribute("href", dataUrl);
   a.click();
 }
+
+const CopyUrlButton = memo(() => {
+  const datas = useMandalartDatas();
+
+  const copy = () => {
+    const stringified = JSON.stringify(datas);
+
+    console.log("stringified", stringified);
+
+    const compressed = compressToBase64(stringified);
+    console.log("compressed.length", compressed, compressed.length);
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("data", compressed);
+    navigator.clipboard.writeText(url.href);
+  };
+
+  return <ClipboardCopyIcon onClick={copy} className="fixed top-4 right-20 w-6 h-6 text-primary cursor-pointer z-10" />;
+});
 
 const ImageDownloadButton = memo(() => {
   const { getNodes } = useReactFlow();
