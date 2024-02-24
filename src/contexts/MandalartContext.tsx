@@ -104,7 +104,6 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
       const flow = rfInstance.toObject();
       localStorage.setItem(MANDAL_ART_FLOW_STORAGE_KEY, JSON.stringify(flow));
       localStorage.setItem(MANDAL_ART_DATA_STORAGE_KEY, JSON.stringify(datas));
-      console.log("save", datas);
     }
   }, [datas, rfInstance]);
 
