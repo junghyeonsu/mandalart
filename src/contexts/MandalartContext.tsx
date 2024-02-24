@@ -21,7 +21,11 @@ interface MandalartContextDispatch {
 
   save: () => void;
 
+  init: () => void;
+
   resetNodes: () => void;
+
+  syncData: () => void;
 
   changeData: (id: NodeId, prop: "title" | "description", value: string) => void;
 }
@@ -29,8 +33,8 @@ interface MandalartContextDispatch {
 const MandalartStateContext = createContext<MandalartContextState | undefined>(undefined);
 const MandalartDispatchContext = createContext<MandalartContextDispatch | undefined>(undefined);
 
-const MANDAL_ART_FLOW_STORAGE_KEY = "mandalart-flow";
-const MANDAL_ART_DATA_STORAGE_KEY = "mandalart-data";
+export const MANDAL_ART_FLOW_STORAGE_KEY = "mandalart-flow";
+export const MANDAL_ART_DATA_STORAGE_KEY = "mandalart-data";
 
 const GROUP_SIZE = 390;
 const GROUP_GAP = 20;
@@ -68,29 +72,64 @@ const initialNodes: Node<NodeData>[] = Object.values(NodePosition)
       };
     });
 
-    return [...nodes];
+    return nodes;
   })
   .flat();
 
 const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const datas = useMandalartDatas();
-  const { updateNode } = useMandalartActions();
+  const { updateNode, reset: resetDatas } = useMandalartActions();
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
+
+  const init = useCallback(() => {
+    const flow = localStorage.getItem(MANDAL_ART_FLOW_STORAGE_KEY);
+    const data = localStorage.getItem(MANDAL_ART_DATA_STORAGE_KEY);
+
+    if (flow) {
+      const flowData = JSON.parse(flow) as ReactFlowJsonObject;
+      setNodes(flowData.nodes);
+    }
+
+    if (data) {
+      const dataData = JSON.parse(data) as NodeData[];
+      dataData.forEach((node) => {
+        updateNode(node.id, node);
+      });
+    }
+  }, [setNodes, updateNode]);
 
   const save = useCallback(() => {
     if (rfInstance) {
       const flow = rfInstance.toObject();
       localStorage.setItem(MANDAL_ART_FLOW_STORAGE_KEY, JSON.stringify(flow));
       localStorage.setItem(MANDAL_ART_DATA_STORAGE_KEY, JSON.stringify(datas));
+      console.log("save", datas);
     }
   }, [datas, rfInstance]);
 
+  const syncData = useCallback(() => {
+    setNodes((prevNodes) => {
+      return produce(prevNodes, (draft) => {
+        draft.forEach((node) => {
+          const data = datas.find((d) => d.id === node.id);
+          if (data) {
+            node.data = data;
+          }
+        });
+      });
+    });
+  }, [datas, setNodes]);
+
   const resetNodes = useCallback(() => {
     setNodes(initialNodes);
+    resetDatas();
+
     localStorage.removeItem(MANDAL_ART_FLOW_STORAGE_KEY);
     localStorage.removeItem(MANDAL_ART_DATA_STORAGE_KEY);
-  }, [setNodes]);
+
+    syncData();
+  }, [resetDatas, setNodes, syncData]);
 
   const saveDebounced = useDebounce(save, 300);
 
@@ -131,21 +170,8 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
 
   // init
   useEffect(() => {
-    const flow = localStorage.getItem(MANDAL_ART_FLOW_STORAGE_KEY);
-    const data = localStorage.getItem(MANDAL_ART_DATA_STORAGE_KEY);
-
-    if (flow) {
-      const flowData = JSON.parse(flow) as ReactFlowJsonObject;
-      setNodes(flowData.nodes);
-    }
-
-    if (data) {
-      const dataData = JSON.parse(data) as NodeData[];
-      dataData.forEach((node) => {
-        updateNode(node.id, node);
-      });
-    }
-  }, [setNodes, updateNode]);
+    init();
+  }, [init]);
 
   return (
     <MandalartDispatchContext.Provider
@@ -153,6 +179,8 @@ const MandalartProvider = ({ children }: { children: React.ReactNode }) => {
         setRfInstance,
         onNodesChange,
         save,
+        init,
+        syncData,
         resetNodes,
         changeData,
       }}

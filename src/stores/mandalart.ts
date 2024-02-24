@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 
 import type { NodeData } from "@/contexts/MandalartContext";
 
@@ -33,21 +34,27 @@ interface MandalartState {
   datas: NodeData[];
   actions: {
     updateNode: (id: NodeData["id"], data: Partial<NodeData>) => void;
+    reset: () => void;
   };
 }
 
-const useMandalartStore = create<MandalartState>((set) => ({
-  datas: initialDatas,
-  actions: {
-    updateNode: (id, data) => {
-      set((state) => {
-        const index = state.datas.findIndex((node) => node.id === id);
-        state.datas[index] = { ...state.datas[index], ...data };
-        return state;
-      });
+const useMandalartStore = create<MandalartState>()(
+  immer((set) => ({
+    datas: initialDatas,
+    actions: {
+      updateNode: (id, data) => {
+        set((state) => {
+          const index = state.datas.findIndex((node) => node.id === id);
+          state.datas[index] = { ...state.datas[index], ...data };
+          return state;
+        });
+      },
+      reset: () => {
+        set({ datas: initialDatas });
+      },
     },
-  },
-}));
+  })),
+);
 
 export const useMandalartDatas = () => useMandalartStore((state) => state.datas);
 export const useMandalartDataById = (id: NodeData["id"]) =>

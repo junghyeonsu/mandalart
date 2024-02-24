@@ -2,9 +2,9 @@ import "reactflow/dist/style.css";
 
 import { Label } from "@radix-ui/react-label";
 import { toPng } from "html-to-image";
-import { ClipboardCopyIcon, ImageDownIcon, RotateCcwIcon } from "lucide-react";
-import { compressToBase64, decompressFromBase64 } from "lz-string";
-import { memo, useCallback, useEffect } from "react";
+import { ImageDownIcon, LinkIcon, RotateCcwIcon } from "lucide-react";
+import { compressToBase64 } from "lz-string";
+import { memo, useCallback } from "react";
 import type { NodeProps } from "reactflow";
 import ReactFlow, {
   Background,
@@ -31,6 +31,7 @@ import type { NodeId, PositionType } from "@/contexts/MandalartContext";
 import { useMandalartDispatch, useMandalartState } from "@/contexts/MandalartContext";
 import { NodePosition, useMandalartDataById, useMandalartDatas } from "@/stores/mandalart";
 
+import { DataAdaptDialog } from "./DataAdaptDialog";
 import { Textarea } from "./ui/textarea";
 import { useToast } from "./ui/use-toast";
 
@@ -177,35 +178,15 @@ const CustomTextNode = (props: NodeProps) => {
 const nodeTypes = { textUpdater: CustomTextNode };
 
 const Mandalart = () => {
-  const datas = useMandalartDatas();
   const { nodes } = useMandalartState();
   const { onNodesChange, setRfInstance } = useMandalartDispatch();
-
-  useEffect(() => {
-    // sync datas to nodes
-  }, [datas]);
-
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const data = url.searchParams.get("data");
-
-    if (data) {
-      const decompressed = decompressFromBase64(data);
-
-      try {
-        const parsed = JSON.parse(decompressed);
-        console.log("parsed", parsed);
-      } catch (error) {
-        console.warn("데이터를 파싱하는데 실패했습니다.");
-      }
-    }
-  }, []);
 
   return (
     <>
       <ResetButton />
       <ImageDownloadButton />
       <CopyUrlButton />
+      <DataAdaptDialog />
 
       <div className="w-[100vh] h-[100vh]">
         <ReactFlow
@@ -234,7 +215,7 @@ function downloadImage(dataUrl: string) {
   a.click();
 }
 
-const CopyUrlButton = memo(() => {
+const CopyUrlButton = () => {
   const { toast } = useToast();
   const datas = useMandalartDatas();
 
@@ -253,8 +234,8 @@ const CopyUrlButton = memo(() => {
     });
   };
 
-  return <ClipboardCopyIcon onClick={copy} className="fixed top-4 right-20 w-6 h-6 text-primary cursor-pointer z-10" />;
-});
+  return <LinkIcon onClick={copy} className="fixed top-4 right-20 w-6 h-6 text-primary cursor-pointer z-10" />;
+};
 
 const ImageDownloadButton = memo(() => {
   const { getNodes } = useReactFlow();
@@ -289,7 +270,7 @@ const ResetButton = memo(() => {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>정말로 리셋하시겠어요?</AlertDialogTitle>
+          <AlertDialogTitle>모든 데이터를 삭제하시겠어요?</AlertDialogTitle>
           <AlertDialogDescription>모든 데이터가 날아가요.</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
