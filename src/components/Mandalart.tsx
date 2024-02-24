@@ -32,6 +32,7 @@ import { useMandalartDispatch, useMandalartState } from "@/contexts/MandalartCon
 import { NodePosition, useMandalartDataById, useMandalartDatas } from "@/stores/mandalart";
 
 import { Textarea } from "./ui/textarea";
+import { useToast } from "./ui/use-toast";
 
 const CELL_SIZE = 16;
 const PreviewCell = ({ cellPosition, isGroupSelected }: { cellPosition: PositionType; isGroupSelected: boolean }) => {
@@ -234,19 +235,22 @@ function downloadImage(dataUrl: string) {
 }
 
 const CopyUrlButton = memo(() => {
+  const { toast } = useToast();
   const datas = useMandalartDatas();
 
   const copy = () => {
     const stringified = JSON.stringify(datas);
-
-    console.log("stringified", stringified);
-
     const compressed = compressToBase64(stringified);
-    console.log("compressed.length", compressed, compressed.length);
 
     const url = new URL(window.location.href);
     url.searchParams.set("data", compressed);
     navigator.clipboard.writeText(url.href);
+
+    toast({
+      title: "URL이 복사되었습니다.",
+      description: "만다라트를 공유할 수 있습니다.",
+      duration: 3000,
+    });
   };
 
   return <ClipboardCopyIcon onClick={copy} className="fixed top-4 right-20 w-6 h-6 text-primary cursor-pointer z-10" />;
