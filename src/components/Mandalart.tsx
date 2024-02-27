@@ -1,10 +1,11 @@
 import "reactflow/dist/style.css";
 
 import { Label } from "@radix-ui/react-label";
+import { useDebounce } from "@toss/react";
 import { toPng } from "html-to-image";
 import { ImageDownIcon, LinkIcon, RotateCcwIcon } from "lucide-react";
 import { compressToBase64 } from "lz-string";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useEffect } from "react";
 import type { NodeProps } from "reactflow";
 import ReactFlow, {
   Background,
@@ -27,9 +28,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTrigger } from "@/components/ui/drawer";
-import type { NodeId, PositionType } from "@/contexts/MandalartContext";
-import { useMandalartDispatch, useMandalartState } from "@/contexts/MandalartContext";
-import { NodePosition, useMandalartDataById, useMandalartDatas } from "@/stores/mandalart";
+import {
+  type NodeId,
+  NodePosition,
+  type PositionType,
+  useMandalartActions,
+  useMandalartDataById,
+  useMandalartDatas,
+  useMandalartNodes,
+} from "@/stores/mandalart";
 
 import { DataAdaptDialog } from "./DataAdaptDialog";
 import { Textarea } from "./ui/textarea";
@@ -112,22 +119,26 @@ const PreviewBoard = ({ id }: { id: NodeId }) => {
 
 const CustomTextNode = (props: NodeProps) => {
   const id = props.id as NodeId;
-  const { changeData } = useMandalartDispatch();
+  const { updateNode, save } = useMandalartActions();
   const data = useMandalartDataById(id);
   const [, cellPosition] = id.split("-") as [PositionType, PositionType];
   const isCenterCell = cellPosition === NodePosition.centerCenter;
 
+  const saveDebounced = useDebounce(save, 300);
+
   const onChangeTitle = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      changeData(id, "title", e.target.value);
+      updateNode(id, { title: e.target.value });
+      saveDebounced();
     },
-    [changeData, id],
+    [id, saveDebounced, updateNode],
   );
   const onChangeDescription = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      changeData(id, "description", e.target.value);
+      updateNode(id, { description: e.target.value });
+      saveDebounced();
     },
-    [changeData, id],
+    [id, saveDebounced, updateNode],
   );
 
   return (
@@ -178,8 +189,12 @@ const CustomTextNode = (props: NodeProps) => {
 const nodeTypes = { textUpdater: CustomTextNode };
 
 const Mandalart = () => {
-  const { nodes } = useMandalartState();
-  const { onNodesChange, setRfInstance } = useMandalartDispatch();
+  const nodes = useMandalartNodes();
+  const { onNodesChange, setRfInstance, init } = useMandalartActions();
+
+  useEffect(() => {
+    init();
+  }, [init]);
 
   return (
     <>
@@ -190,13 +205,13 @@ const Mandalart = () => {
 
       <div className="w-[100vh] h-[100vh]">
         <ReactFlow
+          nodes={nodes}
           minZoom={0.3}
           maxZoom={2}
           fitView
-          nodes={nodes}
           onNodesChange={onNodesChange}
-          nodeTypes={nodeTypes}
           onInit={setRfInstance}
+          nodeTypes={nodeTypes}
         >
           <Controls />
           <MiniMap />
@@ -262,7 +277,7 @@ const ImageDownloadButton = memo(() => {
 });
 
 const ResetButton = memo(() => {
-  const { resetNodes } = useMandalartDispatch();
+  const { reset } = useMandalartActions();
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -275,7 +290,7 @@ const ResetButton = memo(() => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>취소하기</AlertDialogCancel>
-          <AlertDialogAction onClick={resetNodes}>삭제하기</AlertDialogAction>
+          <AlertDialogAction onClick={reset}>삭제하기</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

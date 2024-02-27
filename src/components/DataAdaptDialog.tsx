@@ -11,16 +11,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { NodeData } from "@/contexts/MandalartContext";
-import { MANDAL_ART_DATA_STORAGE_KEY, useMandalartDispatch } from "@/contexts/MandalartContext";
-import { useMandalartActions } from "@/stores/mandalart";
+import { MANDAL_ART_DATA_STORAGE_KEY, type NodeData, useMandalartActions } from "@/stores/mandalart";
 
 export const DataAdaptDialog = () => {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<NodeData[] | null>(null);
 
-  const { updateNode } = useMandalartActions();
-  const { syncData } = useMandalartDispatch();
+  const { updateNode, sync } = useMandalartActions();
 
   const adaptData = () => {
     setOpen(false);
@@ -28,7 +25,7 @@ export const DataAdaptDialog = () => {
 
     data.forEach((node) => updateNode(node.id, node));
     localStorage.setItem(MANDAL_ART_DATA_STORAGE_KEY, JSON.stringify(data));
-    syncData();
+    sync();
 
     const url = new URL(window.location.href);
     url.searchParams.delete("data");
