@@ -129,6 +129,10 @@ const useMandalartStore = create<MandalartState>()(
       },
       reset: () => {
         set({ datas: initialDatas });
+        set({ nodes: initialNodes });
+
+        localStorage.removeItem(MANDAL_ART_FLOW_STORAGE_KEY);
+        localStorage.removeItem(MANDAL_ART_DATA_STORAGE_KEY);
       },
       init: () => {
         const flow = localStorage.getItem(MANDAL_ART_FLOW_STORAGE_KEY);
