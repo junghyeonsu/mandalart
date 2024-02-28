@@ -155,7 +155,7 @@ const CustomTextNode = (props: NodeProps) => {
         <div
           className={`w-[120px] h-[120px] flex flex-col items-center justify-center border border-primary rounded-sm cursor-pointer break-all overflow-auto text-center`}
           style={{
-            backgroundColor: isCenterCell ? "#f3f4f6" : data?.bgColor ? `${data?.bgColor}` : "white",
+            backgroundColor: data?.bgColor ? `${data?.bgColor}` : isCenterCell ? "#f3f4f6" : "white",
           }}
         >
           <p className="text-primary font-bold text-sm whitespace-pre">{data?.title}</p>
