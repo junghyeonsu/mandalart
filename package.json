@@ -23,6 +23,7 @@
     "lucide-react": "^0.309.0",
     "lz-string": "^1.5.0",
     "react": "^18.2.0",
+    "react-color": "^2.19.3",
     "react-dom": "^18.2.0",
     "react-responsive": "^9.0.2",
     "reactflow": "^11.10.2",
@@ -35,6 +36,7 @@
   "devDependencies": {
     "@types/node": "^20.10.7",
     "@types/react": "^18.2.43",
+    "@types/react-color": "^2",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
