@@ -17,7 +17,7 @@ export type NodeId = `${PositionType}-${PositionType}`;
 
 export interface NodeData {
   id: NodeId;
-  title: string;
+  title?: string;
   description?: string;
 }
 
@@ -65,7 +65,6 @@ const initialDatas: NodeData[] = Object.values(NodePosition)
       const id = `${groupPosition}-${nodePosition}` as const;
       return {
         id,
-        title: "",
       };
     });
 
@@ -78,7 +77,9 @@ interface MandalartState {
   nodes: Node<NodeData>[];
   rfInstance: ReactFlowInstance | null;
   actions: {
-    updateNode: (id: NodeData["id"], data: Partial<NodeData>) => void;
+    changeDatas: (datas: NodeData[]) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    updateNode: (id: NodeData["id"], data: any, part: Exclude<keyof NodeData, "id">) => void;
     reset: () => void;
     init: () => void;
     save: () => void;
@@ -96,7 +97,10 @@ const useMandalartStore = create<MandalartState>()(
     nodes: initialNodes,
     rfInstance: null,
     actions: {
-      updateNode: (id, data) => {
+      changeDatas: (datas) => {
+        set({ datas });
+      },
+      updateNode: (id, data, part) => {
         const [groupPosition, nodePosition] = id.split("-") as [PositionType, PositionType];
         const isCenterGroup = groupPosition === NodePosition.centerCenter;
         const isCenterNode = nodePosition === NodePosition.centerCenter;
@@ -106,21 +110,18 @@ const useMandalartStore = create<MandalartState>()(
           if (!node) return;
 
           if (node) {
-            node.title = data.title ?? node.title;
-            node.description = data.description ?? node.description;
+            node[part] = data;
           }
 
           if (isCenterGroup) {
             const relatedNode = state.datas.find((node) => node.id === `${nodePosition}-${NodePosition.centerCenter}`);
             if (relatedNode) {
-              relatedNode.title = data.title ?? node.title;
-              relatedNode.description = data.description ?? node.description;
+              relatedNode[part] = data;
             }
           } else if (isCenterNode) {
             const relatedNode = state.datas.find((node) => node.id === `${NodePosition.centerCenter}-${groupPosition}`);
             if (relatedNode) {
-              relatedNode.title = data.title ?? node.title;
-              relatedNode.description = data.description ?? node.description;
+              relatedNode[part] = data;
             }
           }
 

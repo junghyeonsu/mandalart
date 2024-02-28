@@ -128,14 +128,14 @@ const CustomTextNode = (props: NodeProps) => {
 
   const onChangeTitle = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      updateNode(id, { title: e.target.value });
+      updateNode(id, e.target.value, "title");
       saveDebounced();
     },
     [id, saveDebounced, updateNode],
   );
   const onChangeDescription = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      updateNode(id, { description: e.target.value });
+      updateNode(id, e.target.value, "description");
       saveDebounced();
     },
     [id, saveDebounced, updateNode],

@@ -17,13 +17,13 @@ export const DataAdaptDialog = () => {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<NodeData[] | null>(null);
 
-  const { updateNode, sync } = useMandalartActions();
+  const { sync, changeDatas } = useMandalartActions();
 
   const adaptData = () => {
     setOpen(false);
     if (!data) return;
 
-    data.forEach((node) => updateNode(node.id, node));
+    changeDatas(data);
     localStorage.setItem(MANDAL_ART_DATA_STORAGE_KEY, JSON.stringify(data));
     sync();
 
