@@ -1,9 +1,12 @@
 import "reactflow/dist/style.css";
 
 import { Label } from "@radix-ui/react-label";
+import { useDebounce } from "@toss/react";
 import { toPng } from "html-to-image";
-import { ImageDownIcon, RotateCcwIcon } from "lucide-react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { ImageDownIcon, LinkIcon, RotateCcwIcon } from "lucide-react";
+import { compressToBase64 } from "lz-string";
+import { memo, useCallback, useEffect } from "react";
+import type { NodeProps } from "reactflow";
 import ReactFlow, {
   Background,
   Controls,
@@ -25,10 +28,19 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTrigger } from "@/components/ui/drawer";
-import type { NodeId, PositionType } from "@/contexts/MandalartContext";
-import { type NodeData, useMandalartDispatch, useMandalartState } from "@/contexts/MandalartContext";
+import {
+  type NodeId,
+  NodePosition,
+  type PositionType,
+  useMandalartActions,
+  useMandalartDataById,
+  useMandalartDatas,
+  useMandalartNodes,
+} from "@/stores/mandalart";
 
+import { DataAdaptDialog } from "./DataAdaptDialog";
 import { Textarea } from "./ui/textarea";
+import { useToast } from "./ui/use-toast";
 
 const CELL_SIZE = 16;
 const PreviewCell = ({ cellPosition, isGroupSelected }: { cellPosition: PositionType; isGroupSelected: boolean }) => {
@@ -40,47 +52,47 @@ const PreviewCell = ({ cellPosition, isGroupSelected }: { cellPosition: Position
     >
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "topLeft" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.topLeft ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "topCenter" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.topCenter ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "topRight" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.topRight ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "centerLeft" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.centerLeft ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "centerCenter" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.centerCenter ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "centerRight" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.centerRight ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "bottomLeft" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.bottomLeft ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "bottomCenter" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.bottomCenter ? "bg-black" : "bg-white"
         }`}
       ></div>
       <div
         className={`w-[${CELL_SIZE}px] h-[${CELL_SIZE}px] border border-gray-300 ${
-          isGroupSelected && cellPosition === "bottomRight" ? "bg-black" : "bg-white"
+          isGroupSelected && cellPosition === NodePosition.bottomRight ? "bg-black" : "bg-white"
         }`}
       ></div>
     </div>
@@ -92,45 +104,41 @@ const PreviewBoard = ({ id }: { id: NodeId }) => {
 
   return (
     <div className={`grid grid-cols-3 w-[144px] h-[144px] border rounded-sm bg-gray-100`}>
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topLeft"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topCenter"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "topRight"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "centerLeft"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "centerCenter"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "centerRight"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "bottomLeft"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "bottomCenter"} />
-      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === "bottomRight"} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.topLeft} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.topCenter} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.topRight} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.centerLeft} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.centerCenter} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.centerRight} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.bottomLeft} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.bottomCenter} />
+      <PreviewCell cellPosition={cellPosition} isGroupSelected={groupPosition === NodePosition.bottomRight} />
     </div>
   );
 };
 
-const CustomTextNode = ({ data }: { data: NodeData }) => {
-  const { changeData } = useMandalartDispatch();
-  const { id, title, description } = data;
+const CustomTextNode = (props: NodeProps) => {
+  const id = props.id as NodeId;
+  const { updateNode, save } = useMandalartActions();
+  const data = useMandalartDataById(id);
   const [, cellPosition] = id.split("-") as [PositionType, PositionType];
-  const isCenterCell = cellPosition === "centerCenter";
+  const isCenterCell = cellPosition === NodePosition.centerCenter;
 
-  // NOTE: 크롬에서 한글 조합이 안되는 버그가 있어서 localTitle을 사용합니다.
-  const [localTitle, setLocalTitle] = useState(title);
-  const [localDescription, setLocalDescription] = useState(description);
-
-  useEffect(() => setLocalTitle(title), [title]);
-  useEffect(() => setLocalDescription(description), [description]);
+  const saveDebounced = useDebounce(save, 300);
 
   const onChangeTitle = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setLocalTitle(e.target.value);
-      changeData(id, "title", e.target.value);
+      updateNode(id, e.target.value, "title");
+      saveDebounced();
     },
-    [changeData, id],
+    [id, saveDebounced, updateNode],
   );
   const onChangeDescription = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setLocalDescription(e.target.value);
-      changeData(id, "description", e.target.value);
+      updateNode(id, e.target.value, "description");
+      saveDebounced();
     },
-    [changeData, id],
+    [id, saveDebounced, updateNode],
   );
 
   return (
@@ -141,8 +149,8 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
             isCenterCell ? "bg-gray-100" : "bg-white"
           }`}
         >
-          <p className="text-primary font-bold text-sm whitespace-pre">{localTitle}</p>
-          <p className="text-muted-foreground text-xs whitespace-pre">{localDescription}</p>
+          <p className="text-primary font-bold text-sm whitespace-pre">{data?.title}</p>
+          <p className="text-muted-foreground text-xs whitespace-pre">{data?.description}</p>
         </div>
       </DrawerTrigger>
       <DrawerContent>
@@ -153,8 +161,8 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
           </div>
           <div className="flex flex-col gap-2 items-center justify-center">
             <div className="flex flex-col items-center justify-center w-[144px] h-[144px] border border-primary rounded-sm break-all overflow-auto text-center">
-              <p className="text-primary font-bold text-[16px] whitespace-pre">{localTitle}</p>
-              <p className="text-muted-foreground text-sm whitespace-pre">{localDescription}</p>
+              <p className="text-primary font-bold text-[16px] whitespace-pre">{data?.title}</p>
+              <p className="text-muted-foreground text-sm whitespace-pre">{data?.description}</p>
             </div>
             <span className="text-gray-500 text-xs">미리보기</span>
           </div>
@@ -163,12 +171,12 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
           <div className="flex flex-col gap-4">
             <div className="grid w-full gap-1.5">
               <Label htmlFor="title">만다라트 제목</Label>
-              <Textarea id="title" value={localTitle} onChange={onChangeTitle} />
+              <Textarea id="title" value={data?.title} onChange={onChangeTitle} />
               <p className="text-xs text-muted-foreground">핵심적인 문장을 적어주세요.</p>
             </div>
             <div className="grid w-full gap-1.5">
               <Label htmlFor="title">만다라트 설명</Label>
-              <Textarea id="title" value={localDescription} onChange={onChangeDescription} />
+              <Textarea id="title" value={data?.description} onChange={onChangeDescription} />
               <p className="text-xs text-muted-foreground">해당 만다라트에 대한 설명을 적어주세요.</p>
             </div>
           </div>
@@ -181,23 +189,29 @@ const CustomTextNode = ({ data }: { data: NodeData }) => {
 const nodeTypes = { textUpdater: CustomTextNode };
 
 const Mandalart = () => {
-  const { nodes } = useMandalartState();
-  const { onNodesChange, setRfInstance } = useMandalartDispatch();
+  const nodes = useMandalartNodes();
+  const { onNodesChange, setRfInstance, init } = useMandalartActions();
+
+  useEffect(() => {
+    init();
+  }, [init]);
 
   return (
     <>
       <ResetButton />
       <ImageDownloadButton />
+      <CopyUrlButton />
+      <DataAdaptDialog />
 
       <div className="w-[100vh] h-[100vh]">
         <ReactFlow
+          nodes={nodes}
           minZoom={0.3}
           maxZoom={2}
           fitView
-          nodes={nodes}
           onNodesChange={onNodesChange}
-          nodeTypes={nodeTypes}
           onInit={setRfInstance}
+          nodeTypes={nodeTypes}
         >
           <Controls />
           <MiniMap />
@@ -215,6 +229,28 @@ function downloadImage(dataUrl: string) {
   a.setAttribute("href", dataUrl);
   a.click();
 }
+
+const CopyUrlButton = () => {
+  const { toast } = useToast();
+  const datas = useMandalartDatas();
+
+  const copy = () => {
+    const stringified = JSON.stringify(datas);
+    const compressed = compressToBase64(stringified);
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("data", compressed);
+    navigator.clipboard.writeText(url.href);
+
+    toast({
+      title: "URL이 복사되었습니다.",
+      description: "만다라트를 공유할 수 있습니다.",
+      duration: 3000,
+    });
+  };
+
+  return <LinkIcon onClick={copy} className="fixed top-4 right-20 w-6 h-6 text-primary cursor-pointer z-10" />;
+};
 
 const ImageDownloadButton = memo(() => {
   const { getNodes } = useReactFlow();
@@ -241,7 +277,7 @@ const ImageDownloadButton = memo(() => {
 });
 
 const ResetButton = memo(() => {
-  const { resetNodes } = useMandalartDispatch();
+  const { reset } = useMandalartActions();
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -249,12 +285,12 @@ const ResetButton = memo(() => {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>정말로 리셋하시겠어요?</AlertDialogTitle>
+          <AlertDialogTitle>모든 데이터를 삭제하시겠어요?</AlertDialogTitle>
           <AlertDialogDescription>모든 데이터가 날아가요.</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>취소하기</AlertDialogCancel>
-          <AlertDialogAction onClick={resetNodes}>삭제하기</AlertDialogAction>
+          <AlertDialogAction onClick={reset}>삭제하기</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

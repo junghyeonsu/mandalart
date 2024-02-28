@@ -3535,6 +3535,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lz-string@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "lz-string@npm:1.5.0"
+  bin:
+    lz-string: bin/bin.js
+  checksum: 36128e4de34791838abe979b19927c26e67201ca5acf00880377af7d765b38d1c60847e01c5ec61b1a260c48029084ab3893a3925fd6e48a04011364b089991b
+  languageName: node
+  linkType: hard
+
 "make-fetch-happen@npm:^13.0.0":
   version: 13.0.0
   resolution: "make-fetch-happen@npm:13.0.0"
@@ -3583,6 +3592,7 @@ __metadata:
     html-to-image: "npm:^1.11.11"
     immer: "npm:^10.0.3"
     lucide-react: "npm:^0.309.0"
+    lz-string: "npm:^1.5.0"
     postcss: "npm:^8.4.33"
     prettier: "npm:^3.1.0"
     react: "npm:^18.2.0"
@@ -3596,6 +3606,7 @@ __metadata:
     vaul: "npm:^0.9.0"
     vite: "npm:^5.0.8"
     vite-plugin-radar: "npm:^0.9.2"
+    zustand: "npm:^4.5.1"
   languageName: unknown
   linkType: soft
 
@@ -5053,5 +5064,25 @@ __metadata:
     react:
       optional: true
   checksum: 4802c4e26f2c1ec0d8e0ce8e596413cafb8b3d383e664de4eb30af63cedd23686f17b96a8a4d4583fc4470b187de0bbeafcfb94894efc50f6e62813e02a70b64
+  languageName: node
+  linkType: hard
+
+"zustand@npm:^4.5.1":
+  version: 4.5.1
+  resolution: "zustand@npm:4.5.1"
+  dependencies:
+    use-sync-external-store: "npm:1.2.0"
+  peerDependencies:
+    "@types/react": ">=16.8"
+    immer: ">=9.0.6"
+    react: ">=16.8"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    immer:
+      optional: true
+    react:
+      optional: true
+  checksum: 3c928236f716f026760ddfff9910c37f9e3696169650cd677139dc2fe2623fa215dc31c899caf5b9b6a0668ed003c505918c2a953dbbd295fe7f90092634a90c
   languageName: node
   linkType: hard
