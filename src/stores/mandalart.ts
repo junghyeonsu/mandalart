@@ -19,6 +19,7 @@ export interface NodeData {
   id: NodeId;
   title?: string;
   description?: string;
+  bgColor?: string;
 }
 
 export const NodePosition = {
