@@ -7,6 +7,7 @@ import { ImageDownIcon, LinkIcon, RotateCcwIcon } from "lucide-react";
 import { compressToBase64 } from "lz-string";
 import { memo, useCallback, useEffect } from "react";
 import { GithubPicker } from "react-color";
+import { useMediaQuery } from "react-responsive";
 import type { NodeProps } from "reactflow";
 import ReactFlow, {
   Background,
@@ -28,7 +29,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTrigger } from "@/components/ui/drawer";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import {
   type NodeId,
   NodePosition,
@@ -121,6 +123,9 @@ const PreviewBoard = ({ id }: { id: NodeId }) => {
 const CustomTextNode = (props: NodeProps) => {
   const id = props.id as NodeId;
   const { updateNode, save } = useMandalartActions();
+  const isDesktop = useMediaQuery({
+    query: "(min-width: 600px)",
+  });
   const data = useMandalartDataById(id);
   const [, cellPosition] = id.split("-") as [PositionType, PositionType];
   const isCenterCell = cellPosition === NodePosition.centerCenter;
@@ -149,76 +154,95 @@ const CustomTextNode = (props: NodeProps) => {
     [id, saveDebounced, updateNode],
   );
 
-  return (
-    <Drawer>
-      <DrawerTrigger asChild>
-        <div
-          className={`w-[120px] h-[120px] flex flex-col items-center justify-center border border-primary rounded-sm cursor-pointer break-all overflow-auto text-center`}
-          style={{
-            backgroundColor: data?.bgColor ? `${data?.bgColor}` : isCenterCell ? "#f3f4f6" : "white",
+  const trigger = (
+    <div
+      className={`w-[120px] h-[120px] flex flex-col items-center justify-center border border-primary rounded-sm cursor-pointer break-all overflow-auto text-center`}
+      style={{
+        backgroundColor: data?.bgColor ? `${data?.bgColor}` : isCenterCell ? "#f3f4f6" : "white",
+      }}
+    >
+      <p className="text-primary font-bold text-sm whitespace-pre">{data?.title}</p>
+      <p className="text-muted-foreground text-xs whitespace-pre">{data?.description}</p>
+    </div>
+  );
+
+  const content = (
+    <>
+      <div className="flex items-center justify-evenly space-y-1.5 p-2">
+        <div className="flex flex-col gap-2 items-center justify-center">
+          <PreviewBoard id={id} />
+          <span className="text-gray-500 text-xs">현재 칸</span>
+        </div>
+        <div className="flex flex-col gap-2 items-center justify-center">
+          <div
+            className={`flex flex-col items-center justify-center w-[144px] h-[144px] border border-primary rounded-sm break-all overflow-auto text-center`}
+            style={{
+              backgroundColor: data?.bgColor ? `${data?.bgColor}` : "white",
+            }}
+          >
+            <p className="text-primary font-bold text-[16px] whitespace-pre">{data?.title}</p>
+            <p className="text-muted-foreground text-sm whitespace-pre">{data?.description}</p>
+          </div>
+          <span className="text-gray-500 text-xs">미리보기</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center justify-evenly gap-2">
+        <GithubPicker
+          width="264px"
+          triangle="hide"
+          color={data?.bgColor}
+          onChange={onChangeBgColor}
+          styles={{
+            default: {
+              card: {
+                boxShadow: "none",
+              },
+              triangleShadow: {
+                display: "none",
+              },
+            },
           }}
-        >
-          <p className="text-primary font-bold text-sm whitespace-pre">{data?.title}</p>
-          <p className="text-muted-foreground text-xs whitespace-pre">{data?.description}</p>
-        </div>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="flex items-center justify-evenly">
-          <div className="flex flex-col gap-2 items-center justify-center">
-            <PreviewBoard id={id} />
-            <span className="text-gray-500 text-xs">현재 칸</span>
-          </div>
-          <div className="flex flex-col gap-2 items-center justify-center">
-            <div
-              className={`flex flex-col items-center justify-center w-[144px] h-[144px] border border-primary rounded-sm break-all overflow-auto text-center`}
-              style={{
-                backgroundColor: data?.bgColor ? `${data?.bgColor}` : "white",
-              }}
-            >
-              <p className="text-primary font-bold text-[16px] whitespace-pre">{data?.title}</p>
-              <p className="text-muted-foreground text-sm whitespace-pre">{data?.description}</p>
-            </div>
-            <span className="text-gray-500 text-xs">미리보기</span>
-          </div>
-        </DrawerHeader>
+          colors={[
+            "#FFF",
+            "#F3F4F6",
+            "#EB9694",
+            "#FAD0C3",
+            "#FEF3BD",
+            "#C1E1C5",
+            "#BEDADC",
+            "#C4DEF6",
+            "#BED3F3",
+            "#D4C4FB",
+          ]}
+        />
+        <span className="text-gray-500 text-xs">배경색</span>
+      </div>
 
-        <div className="flex flex-col items-center justify-evenly">
-          <GithubPicker
-            width="264px"
-            triangle="hide"
-            color={data?.bgColor}
-            onChange={onChangeBgColor}
-            colors={[
-              "#FFF",
-              "#F3F4F6",
-              "#EB9694",
-              "#FAD0C3",
-              "#FEF3BD",
-              "#C1E1C5",
-              "#BEDADC",
-              "#C4DEF6",
-              "#BED3F3",
-              "#D4C4FB",
-            ]}
-          />
-          <span className="text-gray-500 text-xs">배경색</span>
+      <div className="flex flex-col gap-4 mt-auto p-4">
+        <div className="grid w-full gap-1.5">
+          <Label htmlFor="title">만다라트 제목</Label>
+          <Textarea id="title" value={data?.title} onChange={onChangeTitle} />
+          <p className="text-xs text-muted-foreground">핵심적인 문장을 적어주세요.</p>
         </div>
+        <div className="grid w-full gap-1.5">
+          <Label htmlFor="title">만다라트 설명</Label>
+          <Textarea id="title" value={data?.description} onChange={onChangeDescription} />
+          <p className="text-xs text-muted-foreground">해당 만다라트에 대한 설명을 적어주세요.</p>
+        </div>
+      </div>
+    </>
+  );
 
-        <DrawerFooter>
-          <div className="flex flex-col gap-4">
-            <div className="grid w-full gap-1.5">
-              <Label htmlFor="title">만다라트 제목</Label>
-              <Textarea id="title" value={data?.title} onChange={onChangeTitle} />
-              <p className="text-xs text-muted-foreground">핵심적인 문장을 적어주세요.</p>
-            </div>
-            <div className="grid w-full gap-1.5">
-              <Label htmlFor="title">만다라트 설명</Label>
-              <Textarea id="title" value={data?.description} onChange={onChangeDescription} />
-              <p className="text-xs text-muted-foreground">해당 만다라트에 대한 설명을 적어주세요.</p>
-            </div>
-          </div>
-        </DrawerFooter>
-      </DrawerContent>
+  return isDesktop ? (
+    <Dialog>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent>{content}</DialogContent>
+    </Dialog>
+  ) : (
+    <Drawer>
+      <DrawerTrigger asChild>{trigger}</DrawerTrigger>
+      <DrawerContent>{content}</DrawerContent>
     </Drawer>
   );
 };
