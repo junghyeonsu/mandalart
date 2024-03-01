@@ -201,7 +201,7 @@ const CustomTextNode = (props: NodeProps) => {
               "#D4C4FB",
             ]}
           />
-          <span className="text-gray-500 text-xs">배경 색</span>
+          <span className="text-gray-500 text-xs">배경색</span>
         </div>
 
         <DrawerFooter>
