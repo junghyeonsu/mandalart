@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MANDAL_ART_DATA_STORAGE_KEY, type NodeData, useMandalartActions } from "@/stores/mandalart";
+import { MANDAL_ART_DATA_STORAGE_KEY, type NodeData, useMandalartActions } from "@/stores/mandal-art";
 
 export const DataAdaptDialog = () => {
   const [open, setOpen] = useState(false);

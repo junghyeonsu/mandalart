@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { useToast } from "@/components/ui/use-toast";
 
-import { Mandalart } from "./components/Mandalart";
+import { Mandalart } from "./components/mandal-art";
 import { ToastAction } from "./components/ui/toast";
 
 function App() {

@@ -49,8 +49,8 @@ const initialNodes: Node<NodeData>[] = Object.values(NodePosition)
           x: (index % 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP + groupPosition.x,
           y: Math.floor(index / 3) * (NODE_SIZE + NODE_GAP) + NODE_GAP + groupPosition.y,
         },
-        type: "textUpdater",
-        data: { id, title: "", description: "" },
+        type: "updater",
+        data: { id },
         draggable: false,
         style: { width: NODE_SIZE, height: NODE_SIZE },
       };
