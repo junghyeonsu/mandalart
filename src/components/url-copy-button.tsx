@@ -23,5 +23,5 @@ export const UrlCopyButton = () => {
     });
   };
 
-  return <LinkIcon onClick={copy} className="fixed top-4 right-20 w-6 h-6 text-primary cursor-pointer z-10" />;
+  return <LinkIcon onClick={copy} className="w-6 h-6 text-primary cursor-pointer z-10" />;
 };

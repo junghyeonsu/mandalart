@@ -27,10 +27,5 @@ export const ImageDownloadButton = memo(() => {
     download("mandalart.png", data);
   };
 
-  return (
-    <ImageDownIcon
-      onClick={downloadMandalartImage}
-      className="fixed top-4 right-12 w-6 h-6 text-primary cursor-pointer z-10"
-    />
-  );
+  return <ImageDownIcon onClick={downloadMandalartImage} className="w-6 h-6 text-primary cursor-pointer z-10" />;
 });

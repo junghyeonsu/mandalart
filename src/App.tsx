@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 import { useToast } from "@/components/ui/use-toast";
 
+import { Header } from "./components/header";
 import { Mandalart } from "./components/mandal-art";
 import { ToastAction } from "./components/ui/toast";
 
@@ -31,6 +32,7 @@ function App() {
 
   return (
     <div className="flex items-center justify-center w-full h-dvh h-vh">
+      <Header />
       <Mandalart />
     </div>
   );

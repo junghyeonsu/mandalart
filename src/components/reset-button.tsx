@@ -19,7 +19,7 @@ export const ResetButton = memo(() => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <RotateCcwIcon className="fixed top-4 right-4 w-6 h-6 text-primary cursor-pointer z-10" />
+        <RotateCcwIcon className="w-6 h-6 text-primary cursor-pointer z-10" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

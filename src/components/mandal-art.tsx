@@ -6,10 +6,7 @@ import ReactFlow, { Background, Controls, MiniMap } from "reactflow";
 import { useMandalartActions, useMandalartNodes } from "@/stores/mandal-art";
 
 import { DataAdaptDialog } from "./data-adapt-dialog";
-import { ImageDownloadButton } from "./image-download-button";
-import { ResetButton } from "./reset-button";
 import { Updater } from "./updater";
-import { UrlCopyButton } from "./url-copy-button";
 
 const nodeTypes = {
   updater: Updater,
@@ -25,9 +22,6 @@ const Mandalart = () => {
 
   return (
     <>
-      <ResetButton />
-      <ImageDownloadButton />
-      <UrlCopyButton />
       <DataAdaptDialog />
 
       <div className="w-[100vh] h-[100vh]">
