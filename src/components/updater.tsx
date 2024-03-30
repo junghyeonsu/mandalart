@@ -69,7 +69,16 @@ export const Updater = (props: NodeProps) => {
       <div className="flex items-center justify-evenly space-y-1.5 p-2">
         <div className="flex flex-col gap-2 items-center justify-center">
           <PreviewBoard id={id} />
-          <span className="text-gray-500 text-xs">현재 칸</span>
+          <div className="flex gap-3">
+            <div className="flex justify-center items-center gap-1">
+              <div className="w-[10px] h-[10px] bg-gray-900 rounded-[1px]" />
+              <span className="text-gray-500 text-xs">현재칸</span>
+            </div>
+            <div className="flex justify-center items-center gap-1">
+              <div className="w-[10px] h-[10px] bg-gray-400 rounded-[1px]" />
+              <span className="text-gray-500 text-xs">연관칸</span>
+            </div>
+          </div>
         </div>
         <div className="flex flex-col gap-2 items-center justify-center">
           <div
